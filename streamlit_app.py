@@ -73,8 +73,8 @@ def calculate_token_supply(start_date):
             "End of Year Supply": int(end_of_year_supply),
             "Airdrop Tokens": airdrop_tokens,
             "Expansion Tokens": expansion_tokens,
+            "Inflation Tokens": 0,  # No inflation tokens in first two years
             "Block Rewards": int(block_reward_tokens),
-            "Inflation Tokens": 0  # No inflation tokens in first two years
         })
         
         # Update supplies for next iteration
@@ -93,8 +93,8 @@ def calculate_token_supply(start_date):
             "End of Year Supply": int(end_of_year_supply),
             "Airdrop Tokens": 0,  # No airdrop in these years
             "Expansion Tokens": expansion_tokens,
+            "Inflation Tokens": 0,  # No inflation tokens in these years
             "Block Rewards": int(block_reward_tokens),
-            "Inflation Tokens": 0  # No inflation tokens in these years
         })
         
         # Update supplies for next iteration
@@ -177,6 +177,12 @@ if st.button("Calculate Token Supply"):
 
         # Convert yearly data to a DataFrame and display as a table
         yearly_df = pd.DataFrame(yearly_data)
+        
+        # Reorder columns: switch Block Rewards and Expansion Tokens
+        yearly_df = yearly_df[["Year", "Beginning of Year Supply", "End of Year Supply", 
+                                "Airdrop Tokens", "Block Rewards", "Expansion Tokens", 
+                                "Inflation Tokens"]]
+
         st.markdown("### Yearly Data")
         st.table(yearly_df)
         
