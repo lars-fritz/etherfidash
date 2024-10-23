@@ -13,6 +13,9 @@ inflation_rate = 1.75 / 100  # 1.75% inflation
 reference_date = datetime(2024, 10, 24, 0, 0)  # October 24th 0:00 UTC
 
 def calculate_token_supply(start_date):
+    # Convert start_date to datetime
+    start_date = datetime.combine(start_date, datetime.min.time())
+    
     # Calculate the number of full days between the reference date and the start date
     delta_days = (start_date - reference_date).days
     if delta_days < 0:
