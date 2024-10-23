@@ -124,7 +124,7 @@ def calculate_token_supply(start_date):
 st.title("Token Supply Calculator")
 
 # Date input
-start_date_str = st.date_input("Select a starting date", value=datetime(2024, 11, 30))
+start_date_str = st.date_input("Select a starting date", value=datetime(2024, 12, 1))
 
 # Button to calculate
 if st.button("Calculate Token Supply"):
