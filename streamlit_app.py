@@ -59,63 +59,87 @@ def calculate_token_supply(start_date):
 
     # Initialize a DataFrame for yearly data
     yearly_data = []
+    beginning_supply = initial_token_supply  # Start with initial supply for the first year
     
     # First two years (include airdrop tokens + expansion tokens + block rewards)
     for year in range(first_two_years):
         block_reward_tokens = min(yearly_block_reward, remaining_block_rewards)
         yearly_tokens_added = airdrop_tokens + block_reward_tokens + expansion_tokens
-        current_supply += yearly_tokens_added
-        remaining_block_rewards -= block_reward_tokens  # Subtract what was distributed
+        end_of_year_supply = beginning_supply + yearly_tokens_added
         
         yearly_data.append({
             "Year": year + 1,
-            "Total Supply": int(current_supply),
-            "Tokens Added": f"Airdrop = {airdrop_tokens}, Expansion = {expansion_tokens}, Block Rewards = {int(block_reward_tokens)}"
+            "Beginning of Year Supply": int(beginning_supply),
+            "End of Year Supply": int(end_of_year_supply),
+            "Airdrop Tokens": airdrop_tokens,
+            "Expansion Tokens": expansion_tokens,
+            "Block Rewards": int(block_reward_tokens)
         })
+        
+        # Update supplies for next iteration
+        beginning_supply = end_of_year_supply
+        remaining_block_rewards -= block_reward_tokens  # Subtract what was distributed
     
     # Next two years (include only expansion tokens + block rewards)
     for year in range(second_two_years):
         block_reward_tokens = min(yearly_block_reward, remaining_block_rewards)
         yearly_tokens_added = block_reward_tokens + expansion_tokens
-        current_supply += yearly_tokens_added
-        remaining_block_rewards -= block_reward_tokens  # Subtract what was distributed
+        end_of_year_supply = beginning_supply + yearly_tokens_added
         
         yearly_data.append({
             "Year": year + 3,
-            "Total Supply": int(current_supply),
-            "Tokens Added": f"Expansion = {expansion_tokens}, Block Rewards = {int(block_reward_tokens)}"
+            "Beginning of Year Supply": int(beginning_supply),
+            "End of Year Supply": int(end_of_year_supply),
+            "Airdrop Tokens": 0,  # No airdrop in these years
+            "Expansion Tokens": expansion_tokens,
+            "Block Rewards": int(block_reward_tokens)
         })
+        
+        # Update supplies for next iteration
+        beginning_supply = end_of_year_supply
+        remaining_block_rewards -= block_reward_tokens  # Subtract what was distributed
     
     # Year 5: Expansion tokens + inflation (1.75% of total supply at end of year 4 + expansion tokens)
-    inflation_tokens_year_5 = inflation_rate * (current_supply + expansion_tokens)
+    inflation_tokens_year_5 = inflation_rate * (beginning_supply + expansion_tokens)
     yearly_tokens_added = expansion_tokens + inflation_tokens_year_5
-    current_supply += yearly_tokens_added
+    end_of_year_supply = beginning_supply + yearly_tokens_added
     
     yearly_data.append({
         "Year": 5,
-        "Total Supply": int(current_supply),
-        "Tokens Added": f"Expansion = {expansion_tokens}, Inflation = {int(inflation_tokens_year_5)}"
+        "Beginning of Year Supply": int(beginning_supply),
+        "End of Year Supply": int(end_of_year_supply),
+        "Airdrop Tokens": 0,
+        "Expansion Tokens": expansion_tokens,
+        "Block Rewards": 0  # No block rewards after year 4
     })
     
     # Year 6: Expansion tokens + inflation (1.75% of total supply at end of year 5 + expansion tokens)
-    inflation_tokens_year_6 = inflation_rate * (current_supply + expansion_tokens)
+    inflation_tokens_year_6 = inflation_rate * (end_of_year_supply + expansion_tokens)
     yearly_tokens_added = expansion_tokens + inflation_tokens_year_6
-    current_supply += yearly_tokens_added
+    beginning_supply = end_of_year_supply
+    end_of_year_supply = beginning_supply + yearly_tokens_added
     
     yearly_data.append({
         "Year": 6,
-        "Total Supply": int(current_supply),
-        "Tokens Added": f"Expansion = {expansion_tokens}, Inflation = {int(inflation_tokens_year_6)}"
+        "Beginning of Year Supply": int(beginning_supply),
+        "End of Year Supply": int(end_of_year_supply),
+        "Airdrop Tokens": 0,
+        "Expansion Tokens": expansion_tokens,
+        "Block Rewards": 0
     })
 
     # Year 7: Only inflation (1.75% of total supply at end of year 6)
-    inflation_tokens_year_7 = inflation_rate * current_supply
-    current_supply += inflation_tokens_year_7
+    inflation_tokens_year_7 = inflation_rate * end_of_year_supply
+    beginning_supply = end_of_year_supply
+    end_of_year_supply = beginning_supply + inflation_tokens_year_7
     
     yearly_data.append({
         "Year": 7,
-        "Total Supply": int(current_supply),
-        "Tokens Added": f"Inflation = {int(inflation_tokens_year_7)}"
+        "Beginning of Year Supply": int(beginning_supply),
+        "End of Year Supply": int(end_of_year_supply),
+        "Airdrop Tokens": 0,
+        "Expansion Tokens": 0,  # No expansion tokens in year 7
+        "Block Rewards": 0
     })
     
     return summary_data, inflation_info, yearly_data
