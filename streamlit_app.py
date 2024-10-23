@@ -73,7 +73,8 @@ def calculate_token_supply(start_date):
             "End of Year Supply": int(end_of_year_supply),
             "Airdrop Tokens": airdrop_tokens,
             "Expansion Tokens": expansion_tokens,
-            "Block Rewards": int(block_reward_tokens)
+            "Block Rewards": int(block_reward_tokens),
+            "Inflation Tokens": 0  # No inflation tokens in first two years
         })
         
         # Update supplies for next iteration
@@ -92,7 +93,8 @@ def calculate_token_supply(start_date):
             "End of Year Supply": int(end_of_year_supply),
             "Airdrop Tokens": 0,  # No airdrop in these years
             "Expansion Tokens": expansion_tokens,
-            "Block Rewards": int(block_reward_tokens)
+            "Block Rewards": int(block_reward_tokens),
+            "Inflation Tokens": 0  # No inflation tokens in these years
         })
         
         # Update supplies for next iteration
@@ -110,7 +112,8 @@ def calculate_token_supply(start_date):
         "End of Year Supply": int(end_of_year_supply),
         "Airdrop Tokens": 0,
         "Expansion Tokens": expansion_tokens,
-        "Block Rewards": 0  # No block rewards after year 4
+        "Block Rewards": 0,  # No block rewards after year 4
+        "Inflation Tokens": int(inflation_tokens_year_5)
     })
     
     # Year 6: Expansion tokens + inflation (1.75% of total supply at end of year 5 + expansion tokens)
@@ -125,7 +128,8 @@ def calculate_token_supply(start_date):
         "End of Year Supply": int(end_of_year_supply),
         "Airdrop Tokens": 0,
         "Expansion Tokens": expansion_tokens,
-        "Block Rewards": 0
+        "Block Rewards": 0,
+        "Inflation Tokens": int(inflation_tokens_year_6)
     })
 
     # Year 7: Only inflation (1.75% of total supply at end of year 6)
@@ -139,7 +143,8 @@ def calculate_token_supply(start_date):
         "End of Year Supply": int(end_of_year_supply),
         "Airdrop Tokens": 0,
         "Expansion Tokens": 0,  # No expansion tokens in year 7
-        "Block Rewards": 0
+        "Block Rewards": 0,
+        "Inflation Tokens": int(inflation_tokens_year_7)
     })
     
     return summary_data, inflation_info, yearly_data
