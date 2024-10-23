@@ -34,6 +34,26 @@ def calculate_token_supply(start_date):
     # Initialize output
     output = []
     
+    # Initial information
+    output.append(f"Total supply on 10/24/2024: {int(initial_token_supply)}")
+    output.append(f"Remaining block rewards on 10/24/2024: {int(initial_block_rewards)}")
+    
+    # Display remaining block rewards at the start date
+    remaining_block_rewards_at_start = initial_block_rewards - tokens_added
+    output.append(f"Remaining block rewards at start date: {int(remaining_block_rewards_at_start)}")
+    
+    # Display one quarter of the remaining block rewards
+    one_quarter_remaining_rewards = remaining_block_rewards / 4
+    output.append(f"One quarter of the remaining block rewards: {int(one_quarter_remaining_rewards)}")
+    
+    # Initialize yearly amounts
+    output.append(f"Yearly airdrop tokens: {airdrop_tokens}")
+    output.append(f"Yearly expansion tokens: {expansion_tokens}")
+    
+    # Inflation information
+    output.append("Inflation kicks in after year 4, specifically in year 5.")
+    output.append("It is calculated as 1.75% of the total supply at the end of the previous year plus expansion tokens.")
+    
     # First two years (include airdrop tokens + expansion tokens + block rewards)
     for year in range(first_two_years):
         block_reward_tokens = min(yearly_block_reward, remaining_block_rewards)
