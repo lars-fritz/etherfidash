@@ -140,7 +140,7 @@ def calculate_token_supply(start_date):
         "Inflation Tokens": int(inflation_tokens_year_7)
     })
     
-    return summary_data, inflation_info, yearly_data
+    return summary_data,  yearly_data
 
 # Streamlit app layout
 st.title("Token Supply Calculator")
@@ -168,7 +168,7 @@ start_date_str = st.date_input("Select a starting date", value=datetime(2024, 12
 # Button to calculate
 if st.button("Calculate Token Supply"):
     try:
-        summary, inflation_info, yearly_data = calculate_token_supply(start_date_str)
+        summary,  yearly_data = calculate_token_supply(start_date_str)
         
         st.markdown("### Inflation Information")
         st.write(inflation_info)
