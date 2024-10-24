@@ -11,7 +11,7 @@ expansion_tokens = 47625000
 first_two_years = 2
 second_two_years = 2
 inflation_rate = 1.75 / 100  # 1.75% inflation
-reference_date = datetime(2024, 9, 10, 0, 0)  # October 24th 0:00 UTC
+reference_date = datetime(2024, 9, 10, 0, 0)  # September 10th 0:00 UTC
 
 def calculate_token_supply(start_date):
     # Convert start_date to datetime
@@ -152,6 +152,23 @@ def calculate_token_supply(start_date):
 # Streamlit app layout
 st.title("Token Supply Calculator")
 
+# Display summary information before the date input
+st.markdown("### Initial Information")
+st.markdown(
+    f"""
+    <div style="border: 2px solid #1E90FF; padding: 10px; border-radius: 5px;">
+    <ul>
+        <li>Total supply on 09/10/2024, 0:00 UTC: {initial_token_supply}</li>
+        <li>Remaining block rewards on 09/10/2024, 0:00 UTC: {initial_block_rewards}</li>
+        <li>Daily block rewards: {daily_reward}</li>
+        <li>Yearly airdrop tokens: {airdrop_tokens}</li>
+        <li>Yearly expansion tokens: {expansion_tokens}</li>
+        <li>Inflation kicks in after year 4, starting at 1.75% of the total supply in year 5.</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True
+)
+
 # Date input
 start_date_str = st.date_input("Select a starting date", value=datetime(2024, 12, 1))
 
@@ -159,18 +176,6 @@ start_date_str = st.date_input("Select a starting date", value=datetime(2024, 12
 if st.button("Calculate Token Supply"):
     try:
         summary, inflation_info, yearly_data = calculate_token_supply(start_date_str)
-        
-        # Display summary in a nice box
-        st.markdown("### Initial Information")
-        st.markdown(
-            f"""
-            <div style="border: 2px solid #1E90FF; padding: 10px; border-radius: 5px;">
-            <ul>
-                {''.join(f'<li>{key}: {value}</li>' for key, value in summary.items())}
-            </ul>
-            </div>
-            """, unsafe_allow_html=True
-        )
         
         st.markdown("### Inflation Information")
         st.write(inflation_info)
