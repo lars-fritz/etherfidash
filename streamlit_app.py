@@ -72,12 +72,12 @@ def calculate_token_supply(start_date):
             "Airdrop Tokens": airdrop_tokens,
             "Expansion Tokens": expansion_tokens,
             "Inflation Tokens": 0,  # No inflation tokens in first two years
-            "Block Rewards": int(block_reward_tokens),
+            "Block Rewards": int(yearly_block_reward),
         })
         
         # Update supplies for next iteration
         beginning_supply = end_of_year_supply
-        remaining_block_rewards -= block_reward_tokens  # Subtract what was distributed
+        remaining_block_rewards -= yearly_block_reward  # Subtract what was distributed
     
     # Next two years (include only expansion tokens + block rewards)
     for year in range(second_two_years):
@@ -91,12 +91,12 @@ def calculate_token_supply(start_date):
             "Airdrop Tokens": 0,  # No airdrop in these years
             "Expansion Tokens": expansion_tokens,
             "Inflation Tokens": 0,  # No inflation tokens in these years
-            "Block Rewards": int(block_reward_tokens),
+            "Block Rewards": int(yearly_block_reward),
         })
         
         # Update supplies for next iteration
         beginning_supply = end_of_year_supply
-        remaining_block_rewards -= block_reward_tokens  # Subtract what was distributed
+        remaining_block_rewards -= yearly_block_reward  # Subtract what was distributed
     
     # Year 5: Expansion tokens + inflation (1.75% of total supply at end of year 4 + expansion tokens)
     inflation_tokens_year_5 = inflation_rate * (beginning_supply + expansion_tokens)
