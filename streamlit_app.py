@@ -11,7 +11,7 @@ expansion_tokens = 47625000
 first_two_years = 2
 second_two_years = 2
 inflation_rate = 1.75 / 100  # 1.75% inflation
-reference_date = datetime(2024, 09, 10, 0, 0)  # October 24th 0:00 UTC
+reference_date = datetime(2024, 9, 10, 0, 0)  # October 24th 0:00 UTC
 
 def calculate_token_supply(start_date):
     # Convert start_date to datetime
