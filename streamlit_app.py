@@ -51,6 +51,17 @@ def calculate_token_supply(start_date):
     yearly_data = []
     beginning_supply = current_supply  # Start with initial supply for the first year
     
+    # Add a point for year 0
+    yearly_data.append({
+        "Year": 0,
+        "Beginning of Year Supply": int(current_supply),  # This will be the starting point
+        "End of Year Supply": int(current_supply),
+        "Airdrop Tokens": 0,
+        "Expansion Tokens": 0,
+        "Inflation Tokens": 0,
+        "Block Rewards": 0
+    })
+
     # First two years (include airdrop tokens + expansion tokens + block rewards)
     for year in range(first_two_years):
         yearly_tokens_added = airdrop_tokens + yearly_block_reward + expansion_tokens
@@ -172,7 +183,7 @@ if st.button("Calculate Token Supply"):
         st.markdown("### Yearly Data")
         st.table(yearly_df)
         
-        # Plot token supply over time
+        # Plot token supply over time starting from year 0
         plt.figure(figsize=(10, 6))
         plt.plot(yearly_df["Year"], yearly_df["End of Year Supply"], marker='o', color='b', label="End of Year Supply")
         plt.xlabel("Year")
