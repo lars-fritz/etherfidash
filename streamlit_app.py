@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 
 # Constants
-initial_token_supply = 2874597203
+initial_token_supply = 2864682607
 initial_block_rewards = 298945229
 daily_reward = 230572
 airdrop_tokens = 95250000
@@ -11,7 +11,7 @@ expansion_tokens = 47625000
 first_two_years = 2
 second_two_years = 2
 inflation_rate = 1.75 / 100  # 1.75% inflation
-reference_date = datetime(2024, 10, 24, 0, 0)  # October 24th 0:00 UTC
+reference_date = datetime(2024, 09, 10, 0, 0)  # October 24th 0:00 UTC
 
 def calculate_token_supply(start_date):
     # Convert start_date to datetime
@@ -20,7 +20,7 @@ def calculate_token_supply(start_date):
     # Calculate the number of full days between the reference date and the start date
     delta_days = (start_date - reference_date).days
     if delta_days < 0:
-        raise ValueError("Start date must be after or on October 24th, 2024.")
+        raise ValueError("Start date must be after or on September 10th, 2024.")
     
     # Calculate tokens added due to daily reward
     tokens_added = delta_days * daily_reward
@@ -36,8 +36,8 @@ def calculate_token_supply(start_date):
     summary_data = {}
     
     # Initial information
-    summary_data["Total supply on 10/24/2024, 0:00 UTC"] = int(initial_token_supply)
-    summary_data["Remaining block rewards on 10/24/2024, 0:00 UTC"] = int(initial_block_rewards)
+    summary_data["Total supply on 09/10/2024, 0:00 UTC"] = int(initial_token_supply)
+    summary_data["Remaining block rewards on 09/10/2024, 0:00 UTC"] = int(initial_block_rewards)
     summary_data["Daily block rewards"] = int(daily_reward)
     # Display remaining block rewards at the start date
     remaining_block_rewards_at_start = initial_block_rewards - tokens_added
