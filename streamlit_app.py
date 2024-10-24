@@ -38,7 +38,7 @@ def calculate_token_supply(start_date):
     # Initial information
     summary_data["Total supply on 10/24/2024"] = int(initial_token_supply)
     summary_data["Remaining block rewards on 10/24/2024"] = int(initial_block_rewards)
-    
+    summary_data["Daily block rewards"] = int(daily_reward)
     # Display remaining block rewards at the start date
     remaining_block_rewards_at_start = initial_block_rewards - tokens_added
     summary_data["Remaining block rewards at start date"] = int(remaining_block_rewards_at_start)
