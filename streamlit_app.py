@@ -59,7 +59,7 @@ def calculate_token_supply(start_date):
 
     # Initialize a DataFrame for yearly data
     yearly_data = []
-    beginning_supply = initial_token_supply  # Start with initial supply for the first year
+    beginning_supply = current_supply  # Start with initial supply for the first year
     
     # First two years (include airdrop tokens + expansion tokens + block rewards)
     for year in range(first_two_years):
