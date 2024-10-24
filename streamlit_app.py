@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Constants
 initial_token_supply = 2864682607
@@ -39,19 +40,13 @@ def calculate_token_supply(start_date):
     summary_data["Total supply on 09/10/2024, 0:00 UTC"] = int(initial_token_supply)
     summary_data["Remaining block rewards on 09/10/2024, 0:00 UTC"] = int(initial_block_rewards)
     summary_data["Daily block rewards"] = int(daily_reward)
-    # Display remaining block rewards at the start date
-    remaining_block_rewards_at_start = initial_block_rewards - tokens_added
-    summary_data["Remaining block rewards at start date"] = int(remaining_block_rewards_at_start)
-    
-    # Display one quarter of the remaining block rewards
+    summary_data["Remaining block rewards at start date"] = int(initial_block_rewards - tokens_added)
     summary_data["Remaining yearly block rewards"] = int(yearly_block_reward)
     
     # Initialize yearly amounts
     summary_data["Yearly airdrop tokens"] = airdrop_tokens
     summary_data["Yearly expansion tokens"] = expansion_tokens
     
-
-
     # Initialize a DataFrame for yearly data
     yearly_data = []
     beginning_supply = current_supply  # Start with initial supply for the first year
@@ -67,13 +62,12 @@ def calculate_token_supply(start_date):
             "End of Year Supply": int(end_of_year_supply),
             "Airdrop Tokens": airdrop_tokens,
             "Expansion Tokens": expansion_tokens,
-            "Inflation Tokens": 0,  # No inflation tokens in first two years
+            "Inflation Tokens": 0,
             "Block Rewards": int(yearly_block_reward),
         })
         
-        # Update supplies for next iteration
         beginning_supply = end_of_year_supply
-        remaining_block_rewards -= yearly_block_reward  # Subtract what was distributed
+        remaining_block_rewards -= yearly_block_reward
     
     # Next two years (include only expansion tokens + block rewards)
     for year in range(second_two_years):
@@ -84,15 +78,14 @@ def calculate_token_supply(start_date):
             "Year": year + 3,
             "Beginning of Year Supply": int(beginning_supply),
             "End of Year Supply": int(end_of_year_supply),
-            "Airdrop Tokens": 0,  # No airdrop in these years
+            "Airdrop Tokens": 0,
             "Expansion Tokens": expansion_tokens,
-            "Inflation Tokens": 0,  # No inflation tokens in these years
+            "Inflation Tokens": 0,
             "Block Rewards": int(yearly_block_reward),
         })
         
-        # Update supplies for next iteration
         beginning_supply = end_of_year_supply
-        remaining_block_rewards -= yearly_block_reward  # Subtract what was distributed
+        remaining_block_rewards -= yearly_block_reward
     
     # Year 5: Expansion tokens + inflation (1.75% of total supply at end of year 4 + expansion tokens)
     inflation_tokens_year_5 = inflation_rate * (beginning_supply + expansion_tokens)
@@ -105,7 +98,7 @@ def calculate_token_supply(start_date):
         "End of Year Supply": int(end_of_year_supply),
         "Airdrop Tokens": 0,
         "Expansion Tokens": expansion_tokens,
-        "Block Rewards": 0,  # No block rewards after year 4
+        "Block Rewards": 0,
         "Inflation Tokens": int(inflation_tokens_year_5)
     })
     
@@ -135,12 +128,12 @@ def calculate_token_supply(start_date):
         "Beginning of Year Supply": int(beginning_supply),
         "End of Year Supply": int(end_of_year_supply),
         "Airdrop Tokens": 0,
-        "Expansion Tokens": 0,  # No expansion tokens in year 7
+        "Expansion Tokens": 0,
         "Block Rewards": 0,
         "Inflation Tokens": int(inflation_tokens_year_7)
     })
     
-    return summary_data,  yearly_data
+    return summary_data, yearly_data
 
 # Streamlit app layout
 st.title("Token Supply Calculator")
@@ -168,19 +161,28 @@ start_date_str = st.date_input("Select a starting date", value=datetime(2024, 12
 # Button to calculate
 if st.button("Calculate Token Supply"):
     try:
-        summary,  yearly_data = calculate_token_supply(start_date_str)
-        
+        summary, yearly_data = calculate_token_supply(start_date_str)
 
-        # Convert yearly data to a DataFrame and display as a table
+        # Convert yearly data to a DataFrame
         yearly_df = pd.DataFrame(yearly_data)
-        
-        # Reorder columns: switch Block Rewards and Expansion Tokens
         yearly_df = yearly_df[["Year", "Beginning of Year Supply", "End of Year Supply", 
-                                "Airdrop Tokens", "Block Rewards", "Expansion Tokens", 
-                                "Inflation Tokens"]]
-
+                               "Airdrop Tokens", "Block Rewards", "Expansion Tokens", 
+                               "Inflation Tokens"]]
+        
         st.markdown("### Yearly Data")
         st.table(yearly_df)
+        
+        # Plot token supply over time
+        plt.figure(figsize=(10, 6))
+        plt.plot(yearly_df["Year"], yearly_df["End of Year Supply"], marker='o', color='b', label="End of Year Supply")
+        plt.xlabel("Year")
+        plt.ylabel("Token Supply")
+        plt.title("Token Supply Over Time")
+        plt.grid(True)
+        plt.legend()
+        
+        # Display the plot in Streamlit
+        st.pyplot(plt)
         
     except ValueError as e:
         st.error(str(e))
