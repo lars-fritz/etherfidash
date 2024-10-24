@@ -44,8 +44,7 @@ def calculate_token_supply(start_date):
     summary_data["Remaining block rewards at start date"] = int(remaining_block_rewards_at_start)
     
     # Display one quarter of the remaining block rewards
-    one_quarter_remaining_rewards = remaining_block_rewards / 4
-    summary_data["Remaining yearly block rewards"] = int(one_quarter_remaining_rewards)
+    summary_data["Remaining yearly block rewards"] = int(yearly_block_reward)
     
     # Initialize yearly amounts
     summary_data["Yearly airdrop tokens"] = airdrop_tokens
@@ -63,8 +62,7 @@ def calculate_token_supply(start_date):
     
     # First two years (include airdrop tokens + expansion tokens + block rewards)
     for year in range(first_two_years):
-        block_reward_tokens = min(yearly_block_reward, remaining_block_rewards)
-        yearly_tokens_added = airdrop_tokens + block_reward_tokens + expansion_tokens
+        yearly_tokens_added = airdrop_tokens + yearly_block_reward + expansion_tokens
         end_of_year_supply = beginning_supply + yearly_tokens_added
         
         yearly_data.append({
@@ -83,8 +81,7 @@ def calculate_token_supply(start_date):
     
     # Next two years (include only expansion tokens + block rewards)
     for year in range(second_two_years):
-        block_reward_tokens = min(yearly_block_reward, remaining_block_rewards)
-        yearly_tokens_added = block_reward_tokens + expansion_tokens
+        yearly_tokens_added = yearly_block_reward + expansion_tokens
         end_of_year_supply = beginning_supply + yearly_tokens_added
         
         yearly_data.append({
