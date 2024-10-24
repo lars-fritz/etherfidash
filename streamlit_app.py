@@ -50,11 +50,7 @@ def calculate_token_supply(start_date):
     summary_data["Yearly airdrop tokens"] = airdrop_tokens
     summary_data["Yearly expansion tokens"] = expansion_tokens
     
-    # Inflation information
-    inflation_info = (
-        "Inflation kicks in after year 4, specifically in year 5.\n"
-        "It is calculated as 1.75% of the total supply at the end of the previous year plus expansion tokens."
-    )
+
 
     # Initialize a DataFrame for yearly data
     yearly_data = []
