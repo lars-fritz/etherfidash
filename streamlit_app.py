@@ -45,7 +45,7 @@ def calculate_token_supply(start_date):
     
     # Display one quarter of the remaining block rewards
     one_quarter_remaining_rewards = remaining_block_rewards / 4
-    summary_data["One quarter of the remaining block rewards"] = int(one_quarter_remaining_rewards)
+    summary_data["Remaining yearly block rewards"] = int(one_quarter_remaining_rewards)
     
     # Initialize yearly amounts
     summary_data["Yearly airdrop tokens"] = airdrop_tokens
