@@ -170,8 +170,6 @@ if st.button("Calculate Token Supply"):
     try:
         summary,  yearly_data = calculate_token_supply(start_date_str)
         
-        st.markdown("### Inflation Information")
-        st.write(inflation_info)
 
         # Convert yearly data to a DataFrame and display as a table
         yearly_df = pd.DataFrame(yearly_data)
