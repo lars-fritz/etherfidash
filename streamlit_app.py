@@ -4,15 +4,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Constants
-initial_token_supply = 2864682607
-initial_block_rewards = 298945229
-daily_reward = 230572
+initial_token_supply = 2872024344
+initial_block_rewards = 3175000000-11483914-2872024344
+daily_average_reward=2000
+daily_average_burn=300
 airdrop_tokens = 95250000
 expansion_tokens = 47625000
 first_two_years = 2
 second_two_years = 2
 inflation_rate = 1.75 / 100  # 1.75% inflation
-reference_date = datetime(2024, 9, 10, 0, 0)  # September 10th 0:00 UTC
+reference_date = datetime(2024, 10, 27, 7, 30)  # September 10th 0:00 UTC
 
 def calculate_token_supply(start_date):
     # Convert start_date to datetime
@@ -24,8 +25,9 @@ def calculate_token_supply(start_date):
         raise ValueError("Start date must be after or on September 10th, 2024.")
     
     # Calculate tokens added due to daily reward
-    tokens_added = delta_days * daily_reward
-    current_supply = initial_token_supply + tokens_added
+    tokens_added = delta_days * daily_average_reward
+    tokens_removed=delta_days * daily_average_brun
+    current_supply = initial_token_supply + tokens_added-tokens_removed
     
     # Calculate remaining block rewards
     remaining_block_rewards = initial_block_rewards - tokens_added
