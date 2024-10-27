@@ -5,15 +5,13 @@ import matplotlib.pyplot as plt
 
 # Constants and user-defined inputs
 initial_block_rewards = 3175000000
-daily_average_reward = 2000
-daily_average_burn = 300
 airdrop_tokens = 95250000
 expansion_tokens = 47625000
 first_two_years = 2
 second_two_years = 2
 inflation_rate = 1.75 / 100  # 1.75% inflation
 
-# User input for current token supply and current burn
+# User input for current token supply, burn, and daily averages
 st.title("Token Supply Calculator")
 
 initial_token_supply = st.number_input(
@@ -29,13 +27,27 @@ initial_burn = st.number_input(
     help="You can find the current burn at https://ftmonfire.fantom.network."
 )
 
+# New inputs for daily average reward and burn
+daily_average_reward = st.number_input(
+    "Enter the average daily reward:",
+    min_value=0,
+    value=2000,
+    help="Average daily tokens added to the supply."
+)
+daily_average_burn = st.number_input(
+    "Enter the average daily burn:",
+    min_value=0,
+    value=300,
+    help="Average daily tokens removed from the supply."
+)
+
 reference_date = datetime.now()  # Set reference date to current date and time
 initial_block_rewards -= initial_burn + initial_token_supply
 
 # Define the token supply calculation function
 def calculate_token_supply(start_date):
     start_date = datetime.combine(start_date, datetime.min.time())
-    delta_days = (start_date - reference_date).total_seconds()/(24*60*60)
+    delta_days = (start_date - reference_date).total_seconds() / (24 * 60 * 60)
     if delta_days < 0:
         raise ValueError("Start date must be after or on the reference date.")
     
@@ -115,3 +127,4 @@ if st.button("Calculate Token Supply"):
         
     except ValueError as e:
         st.error(str(e))
+
