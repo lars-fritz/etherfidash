@@ -17,13 +17,13 @@ st.title("Token Supply Calculator")
 initial_token_supply = st.number_input(
     "Enter the current token supply:",
     min_value=0,
-    value=2872024300,
+    value=2872042857,
     help="You can find the current token supply at https://explorer.fantom.network/staking."
 )
 initial_burn = st.number_input(
     "Enter the current burn:",
     min_value=0,
-    value=11483890,
+    value=11484022,
     help="You can find the current burn at https://ftmonfire.fantom.network."
 )
 
@@ -31,13 +31,13 @@ initial_burn = st.number_input(
 daily_average_reward = st.number_input(
     "Enter the average daily reward:",
     min_value=0,
-    value=2000,
+    value=230572,
     help="Average daily tokens added to the supply."
 )
 daily_average_burn = st.number_input(
     "Enter the average daily burn:",
     min_value=0,
-    value=300,
+    value=0,
     help="Average daily tokens removed from the supply."
 )
 
