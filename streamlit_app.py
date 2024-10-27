@@ -52,6 +52,7 @@ def calculate_token_supply(start_date):
     summary_data["Daily block rewards"] = int(daily_average_reward)
     summary_data["Remaining block rewards at start date"] = int(initial_block_rewards - tokens_added)
     summary_data["Remaining yearly block rewards"] = int(yearly_block_reward)
+    summary_data["Days until start date"] = delta_days
     
     yearly_data = []
     beginning_supply = current_supply
@@ -95,6 +96,8 @@ start_date_str = st.date_input("Select a starting date", value=datetime(2024, 12
 if st.button("Calculate Token Supply"):
     try:
         summary, yearly_data = calculate_token_supply(start_date_str)
+
+        st.write(f"### Days until selected start date: {summary['Days until start date']}")
 
         yearly_df = pd.DataFrame(yearly_data)
         st.markdown("### Yearly Data")
