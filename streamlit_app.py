@@ -159,7 +159,7 @@ st.markdown(
     <ul>
         <li>Total supply on 09/10/2024, 0:00 UTC: {initial_token_supply}</li>
         <li>Remaining block rewards on 09/10/2024, 0:00 UTC: {initial_block_rewards}</li>
-        <li>Daily block rewards: {daily_reward}</li>
+        <li>Daily average block rewards: {daily_averge_reward}</li>
         <li>Yearly airdrop tokens: {airdrop_tokens}</li>
         <li>Yearly expansion tokens: {expansion_tokens}</li>
         <li>Inflation kicks in after year 4, starting at 1.75% of the total supply in year 5.</li>
