@@ -35,7 +35,7 @@ initial_block_rewards -= initial_burn + initial_token_supply
 # Define the token supply calculation function
 def calculate_token_supply(start_date):
     start_date = datetime.combine(start_date, datetime.min.time())
-    delta_days = (start_date - reference_date).totalseconds()/(24*60*60)
+    delta_days = (start_date - reference_date).total_seconds()/(24*60*60)
     if delta_days < 0:
         raise ValueError("Start date must be after or on the reference date.")
     
