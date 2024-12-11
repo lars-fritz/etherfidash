@@ -2,3 +2,4 @@ streamlit
 datetime
 pandas
 matplotlib
+plotly>=5.0.0
