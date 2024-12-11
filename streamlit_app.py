@@ -1,14 +1,13 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import requests
 from io import StringIO
 
 # Define the URL of the CSV file
 CSV_URL = "https://community.chaoslabs.xyz/aave/risk/assets/weETH"  # Replace with the direct CSV link
 
-# Function to fetch and load the CSV data
-@st.cache
+# Use st.cache_data to cache the data-fetching process
+@st.cache_data
 def fetch_data(url):
     try:
         response = requests.get(url)
