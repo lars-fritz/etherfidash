@@ -3,3 +3,4 @@ datetime
 pandas
 matplotlib
 plotly>=5.0.0
+bs4
