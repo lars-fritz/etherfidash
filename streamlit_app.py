@@ -1,41 +1,19 @@
-import streamlit as st
-import pandas as pd
 import requests
-from io import StringIO
+from bs4 import BeautifulSoup
 
-# Define the URL of the CSV file
-CSV_URL = "https://community.chaoslabs.xyz/aave/risk/assets/weETH"  # Replace with the direct CSV link
+# URL of the Etherscan page
+url = "https://etherscan.io/address/0x308861a430be4cce5502d0a12724771fc6daf216#code"
 
-# Use st.cache_data to cache the data-fetching process
-@st.cache_data
-def fetch_data(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an error for HTTP issues
-        csv_data = StringIO(response.text)  # Convert to a file-like object
-        return pd.read_csv(csv_data)  # Load CSV data into a pandas DataFrame
-    except Exception as e:
-        st.error(f"Failed to fetch data: {e}")
-        return pd.DataFrame()  # Return an empty DataFrame on error
+# Send a GET request to the page
+response = requests.get(url)
 
-# Fetch the data
-st.title("weETH Data Visualization")
-st.write("Fetching and displaying data from ChaosLabs.")
+# Parse the HTML content
+soup = BeautifulSoup(response.text, 'html.parser')
 
-data = fetch_data(CSV_URL)
-
-if not data.empty:
-    # Display the DataFrame
-    st.write("Raw Data:")
-    st.dataframe(data)
-
-    # Create a plot
-    # Assuming 'Date' and 'Value' are columns in the CSV file (adjust as per actual data structure)
-    if "Date" in data.columns and "Value" in data.columns:
-        data["Date"] = pd.to_datetime(data["Date"])  # Convert to datetime if necessary
-        fig = px.line(data, x="Date", y="Value", title="weETH Trends Over Time")
-        st.plotly_chart(fig)
-    else:
-        st.warning("The data does not have 'Date' and 'Value' columns for plotting.")
-else:
-    st.warning("No data available to display.")
+# Locate the ETH Balance (adjust the element ID if necessary)
+try:
+    eth_balance_element = soup.find("span", {"id": "ContentPlaceHolder1_divSummary"}).find("b")
+    eth_balance = eth_balance_element.text.strip()  # Extract the text and remove any surrounding whitespace
+    print(f"ETH Balance: {eth_balance}")
+except AttributeError:
+    print("Failed to locate ETH balance on the page.")
