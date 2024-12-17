@@ -128,7 +128,7 @@ fig_eth_rate.update_layout(
 st.plotly_chart(fig_eth_rate)
 
 # Display Summary Statistics Table
-st.subheader("Linear regression: slope can be interpreted as drift and standard deviation as volatility")
+st.subheader("Linear regression")
 summary_df = pd.DataFrame.from_dict(summary_stats, orient='index')
 summary_df = summary_df.rename(columns={"Slope": "Slope (ETH Rate Change)", "Residuals Std Dev": "Std Dev of Residuals"})
 st.dataframe(summary_df.style.format({"Slope (ETH Rate Change)": "{:.6f}", "Std Dev of Residuals": "{:.6f}"}))
@@ -137,7 +137,7 @@ st.dataframe(summary_df.style.format({"Slope (ETH Rate Change)": "{:.6f}", "Std 
 st.info("The regression line represents the trend of ETH rates over time whereas the standard deviation is a measure for the volatility on the same time window (although it is unclear how to extend volatility to egged tokens)")
 
 ### Relative ETH Rate Difference Plot ###
-st.subheader("Relative deviation from ethereum")
+st.subheader("Relative Deviation from Ethereum")
 
 # Initialize a new interactive plot
 fig_relative_diff = go.Figure()
@@ -187,6 +187,7 @@ for blockchain in relative_blockchains:
         continue  # Skip Ethereum itself
     blockchain_relative = calculate_relative_difference(data, blockchain, ethereum_eth_rate, ethereum_days)
     if not blockchain_relative.empty:
+        # Add plot for each blockchain's relative difference
         fig_relative_diff.add_trace(go.Scatter(
             x=blockchain_relative["day"],
             y=blockchain_relative["relative_difference"],
@@ -194,6 +195,36 @@ for blockchain in relative_blockchains:
             name=f"{blockchain.capitalize()} Relative ETH Rate Difference",
             line=dict(color=relative_diff_colors.get(blockchain, "gray")),  # Default to gray if no color
             marker=dict(size=4)  # Smaller marker size
+        ))
+
+        # Calculate average and standard deviation of the relative differences for the blockchain
+        avg_diff = blockchain_relative["relative_difference"].mean()
+        std_diff = blockchain_relative["relative_difference"].std()
+
+        # Add average line
+        fig_relative_diff.add_trace(go.Scatter(
+            x=[blockchain_relative["day"].min(), blockchain_relative["day"].max()],
+            y=[avg_diff, avg_diff],
+            mode='lines',
+            line=dict(dash='dash', color=relative_diff_colors.get(blockchain, "gray")),
+            name=f"{blockchain.capitalize()} Average Relative Difference"
+        ))
+
+        # Add standard deviation lines
+        fig_relative_diff.add_trace(go.Scatter(
+            x=[blockchain_relative["day"].min(), blockchain_relative["day"].max()],
+            y=[avg_diff + std_diff, avg_diff + std_diff],
+            mode='lines',
+            line=dict(dash='dot', color=relative_diff_colors.get(blockchain, "gray")),
+            name=f"{blockchain.capitalize()} +1 Std Dev"
+        ))
+
+        fig_relative_diff.add_trace(go.Scatter(
+            x=[blockchain_relative["day"].min(), blockchain_relative["day"].max()],
+            y=[avg_diff - std_diff, avg_diff - std_diff],
+            mode='lines',
+            line=dict(dash='dot', color=relative_diff_colors.get(blockchain, "gray")),
+            name=f"{blockchain.capitalize()} -1 Std Dev"
         ))
 
 # Update layout for the plot
@@ -208,6 +239,7 @@ fig_relative_diff.update_layout(
 # Display the plot in Streamlit
 st.plotly_chart(fig_relative_diff)
 
+st.info("It is important to note the eETH can only be minted on ethereum, blast, base, and linea. ")
 
 st.subheader("Weeth Liquidity Across Blockchains")
 fig_liquidity = go.Figure()
