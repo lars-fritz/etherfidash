@@ -486,13 +486,14 @@ for blockchain in selected_blockchains:
     liquidity = float(liquidity_data.iloc[-1]) if not liquidity_data.empty else None
     
     # Collateral at Risk (if available in session state)
-    collateral_at_risk = None
     collateral_at_risk_eth = None
     if hasattr(st.session_state, 'risk_data'):
         risk_row = st.session_state.risk_data[st.session_state.risk_data['Label'] == blockchain]
         if not risk_row.empty:
-            collateral_at_risk = float(risk_row['Value'].values[0])
             collateral_at_risk_eth = float(risk_row['Value (ETH)'].values[0])
+    
+    # Determine if minting is possible
+    can_mint = 'Yes' if blockchain in ['ethereum', 'blast', 'base', 'linea'] else 'No'
     
     # Prepare row for summary
     summary_row = {
@@ -501,8 +502,8 @@ for blockchain in selected_blockchains:
         'Relative ETH Rate Difference': round(relative_difference, 4) if relative_difference is not None else 'N/A',
         'Std Dev of Relative Difference': round(std_dev, 4) if std_dev is not None else 'N/A',
         'Weeth Liquidity': round(liquidity, 2) if liquidity is not None else 'N/A',
-        'Collateral at Risk (USD)': round(collateral_at_risk, 2) if collateral_at_risk is not None else 'N/A',
-        'Collateral at Risk (ETH)': round(collateral_at_risk_eth, 2) if collateral_at_risk_eth is not None else 'N/A'
+        'Collateral at Risk (ETH)': round(collateral_at_risk_eth, 2) if collateral_at_risk_eth is not None else 'N/A',
+        'Can Mint': can_mint
     }
     
     summary_rows.append(summary_row)
