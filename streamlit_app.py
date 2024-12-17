@@ -419,3 +419,59 @@ else:
 
 # Step 5: Additional functionality (if needed)
 st.write("You can upload both CSV files and view their corresponding pie charts above.")
+
+# Step 5: Create a summary table with the requested data
+if 'collateral_data' in st.session_state and 'risk_data' in st.session_state:
+    # Assuming the latest data is the last row for each blockchain in the dataset
+    latest_data = data.drop_duplicates('blockchain', keep='last')
+    
+    # Prepare rows for the summary table
+    table_rows = []
+
+    for blockchain in selected_blockchains:
+        latest_blockchain_data = latest_data[latest_data['blockchain'] == blockchain]
+        
+        if not latest_blockchain_data.empty:
+            eth_rate = latest_blockchain_data['eth_rate'].values[0]
+            liquidity = latest_blockchain_data['weeth_liquidity'].values[0]
+            
+            # ETH rate difference from Ethereum
+            ethereum_rate = latest_data[latest_data['blockchain'] == 'ethereum']['eth_rate'].values[0]
+            rate_diff = (eth_rate - ethereum_rate) / ethereum_rate if ethereum_rate != 0 else None
+
+            # Find standard deviation of relative difference from your previous calculation
+            if blockchain in table_data:
+                std_diff = next(item['Standard Deviation'] for item in table_data if item['Blockchain'].lower() == blockchain)
+            else:
+                std_diff = None
+
+            # Collateral at Risk (if available)
+            collateral_risk = st.session_state.risk_data[st.session_state.risk_data['Label'] == blockchain]['Value'].values[0] if blockchain in st.session_state.risk_data['Label'].values else None
+
+            # Append to table rows
+            table_rows.append({
+                'Blockchain': blockchain.capitalize(),
+                'Latest ETH Rate': eth_rate,
+                'Difference from Ethereum': rate_diff,
+                'Std Dev of Difference': std_diff,
+                'Liquidity': liquidity,
+                'Collateral at Risk': collateral_risk
+            })
+
+    # Create DataFrame from rows
+    summary_table = pd.DataFrame(table_rows)
+
+    # Display the summary table
+    st.subheader("Summary Table")
+    st.dataframe(summary_table.style.format({
+        'Latest ETH Rate': '{:.6f}',
+        'Difference from Ethereum': '{:.6f}',
+        'Std Dev of Difference': '{:.6f}',
+        'Liquidity': '{:.2f}',
+        'Collateral at Risk': '{:.2f}'
+    }))
+else:
+    st.write("Please upload both CSV files to see the summary table.")
+
+# Footer Information
+st.info("**Note**: Values in the summary table are based on the latest available data. The collateral at risk is only shown if the CSV for collateral at risk was uploaded.")
