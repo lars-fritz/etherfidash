@@ -173,93 +173,67 @@ st.plotly_chart(fig_liquidity)
 # Footer
 st.info("Weeth Liquidity shows how much liquidity is available on each blockchain over time.")
 
-### Normalized ETH Rates Plot ###
-# Function to normalize ETH rate relative to Ethereum
-def normalize_eth_rate(data, blockchain_name, ethereum_eth_rate, ethereum_days):
+### Relative ETH Rate Difference Plot ###
+st.subheader("Relative ETH Rate Difference Compared to Ethereum")
+
+# Initialize a new interactive plot
+fig_relative_diff = go.Figure()
+
+# Preprocess Ethereum baseline data
+ethereum_data = data[data["blockchain"] == "ethereum"]
+ethereum_days = pd.to_datetime(ethereum_data["day"].dropna()).tolist()
+ethereum_eth_rate = pd.to_numeric(ethereum_data["eth_rate"].dropna(), errors='coerce').tolist()
+
+# Function to calculate relative ETH rate difference
+def calculate_relative_difference(data, blockchain_name, ethereum_eth_rate, ethereum_days):
     blockchain_data = data[data["blockchain"] == blockchain_name]
     blockchain_eth_rate = blockchain_data[["day", "eth_rate"]].dropna()
     blockchain_eth_rate["eth_rate"] = pd.to_numeric(blockchain_eth_rate["eth_rate"], errors='coerce')
     blockchain_eth_rate["day"] = pd.to_datetime(blockchain_eth_rate["day"])
     blockchain_eth_rate = blockchain_eth_rate.sort_values(by="day").reset_index(drop=True)
 
-    normalized_eth_rate = []
+    relative_difference = []
     for i, day in enumerate(blockchain_eth_rate["day"]):
         if day in ethereum_days:
             idx = ethereum_days.index(day)
-            eth_rate_value = ethereum_eth_rate[idx]
-            if eth_rate_value != 0:  # Avoid division by zero
-                normalized_value = blockchain_eth_rate["eth_rate"].iloc[i] / eth_rate_value
-                normalized_eth_rate.append(normalized_value)
+            eth_rate_eth = ethereum_eth_rate[idx]
+            if eth_rate_eth != 0:  # Avoid division by zero
+                diff = (blockchain_eth_rate["eth_rate"].iloc[i] - eth_rate_eth) / eth_rate_eth
+                relative_difference.append(diff)
             else:
-                normalized_eth_rate.append(None)
+                relative_difference.append(None)
         else:
-            normalized_eth_rate.append(None)
+            relative_difference.append(None)
 
-    blockchain_eth_rate["normalized_eth_rate"] = normalized_eth_rate
-    blockchain_eth_rate = blockchain_eth_rate.dropna(subset=["normalized_eth_rate"])
+    blockchain_eth_rate["relative_difference"] = relative_difference
+    blockchain_eth_rate = blockchain_eth_rate.dropna(subset=["relative_difference"])
     return blockchain_eth_rate
 
-# First Plot: ETH Rates with Linear Regression
-st.subheader("ETH Rates with Linear Regression")
-fig_eth_rate = go.Figure()
+# Blockchains to compare
+relative_diff_colors = ["red", "blue", "green", "purple", "orange", "pink"]
+relative_blockchains = ['scroll', 'arbitrum', 'blast', 'bnb', 'base', 'linea']
 
-summary_stats = {}
-for blockchain in selected_blockchains:
-    days, Y, predictions, slope, residuals_std = process_blockchain(data, blockchain)
-    if days is not None:
-        fig_eth_rate.add_trace(go.Scatter(
-            x=days, y=Y.flatten(),
-            mode='markers',
-            marker=dict(color=color_map[blockchain]),
-            name=f"{blockchain} ETH Rate"
-        ))
-        fig_eth_rate.add_trace(go.Scatter(
-            x=days, y=predictions.flatten(),
-            mode='lines',
-            line=dict(color=color_map[blockchain], width=2),
-            name=f"{blockchain} Regression (Slope: {slope:.6f})"
-        ))
-        summary_stats[blockchain] = {"Slope": slope, "Residuals Std Dev": residuals_std}
-
-fig_eth_rate.update_layout(
-    title="ETH Rates and Linear Regression for Selected Blockchains",
-    xaxis_title="Day",
-    yaxis_title="ETH Rate",
-    template="plotly_white",
-    legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5)
-)
-st.plotly_chart(fig_eth_rate)
-
-# Second Plot: Normalized ETH Rates Relative to Ethereum
-st.subheader("Normalized ETH Rates Relative to Ethereum")
-fig_normalized = go.Figure()
-
-# Filter Ethereum data to get baseline for normalization
-ethereum_data = data[data["blockchain"] == "ethereum"]
-ethereum_eth_rate = ethereum_data["eth_rate"].dropna().tolist()
-ethereum_days = pd.to_datetime(ethereum_data["day"].dropna()).tolist()
-
-# Define colors for the selected blockchains
-normalized_colors = ["green", "blue", "purple", "brown", "teal", "pink"]
-selected_normalized_blockchains = ['scroll', 'arbitrum', 'blast', 'bnb', 'base', 'linea']
-
-for idx, blockchain in enumerate(selected_normalized_blockchains):
-    blockchain_data = normalize_eth_rate(data, blockchain, ethereum_eth_rate, ethereum_days)
-    if not blockchain_data.empty:
-        fig_normalized.add_trace(go.Scatter(
-            x=blockchain_data["day"],
-            y=blockchain_data["normalized_eth_rate"],
+# Plot relative differences for each blockchain
+for idx, blockchain in enumerate(relative_blockchains):
+    blockchain_relative = calculate_relative_difference(data, blockchain, ethereum_eth_rate, ethereum_days)
+    if not blockchain_relative.empty:
+        fig_relative_diff.add_trace(go.Scatter(
+            x=blockchain_relative["day"],
+            y=blockchain_relative["relative_difference"],
             mode='lines+markers',
-            name=f"{blockchain.capitalize()} Relative ETH Rate",
-            line=dict(color=normalized_colors[idx]),
-            marker=dict(size=4)  # Reduced dot size
+            name=f"{blockchain.capitalize()} Relative ETH Rate Difference",
+            line=dict(color=relative_diff_colors[idx]),
+            marker=dict(size=4)  # Smaller marker size
         ))
 
-fig_normalized.update_layout(
-    title="Normalized ETH Rates Relative to Ethereum",
+# Update layout for the plot
+fig_relative_diff.update_layout(
+    title="Relative ETH Rate Difference Compared to Ethereum",
     xaxis_title="Day",
-    yaxis_title="Relative ETH Rate",
+    yaxis_title="Relative Difference",
     legend=dict(yanchor="top", y=0.9, xanchor="left", x=1.02),
     template="plotly_white"
 )
-st.plotly_chart(fig_normalized)
+
+# Display the plot in Streamlit
+st.plotly_chart(fig_relative_diff)
