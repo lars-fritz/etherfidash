@@ -423,6 +423,12 @@ st.subheader("Blockchain Performance Summary")
 # Prepare summary data
 summary_rows = []
 
+# Ensure ethereum latest rate is safely extracted
+ethereum_latest_rate = None
+ethereum_data = data[data["blockchain"] == "ethereum"]
+if not ethereum_data["eth_rate"].dropna().empty:
+    ethereum_latest_rate = ethereum_data["eth_rate"].dropna().iloc[-1]
+
 for blockchain in selected_blockchains:
     # Skip Ethereum in comparisons
     if blockchain == "ethereum":
@@ -431,14 +437,15 @@ for blockchain in selected_blockchains:
     # Extract latest data for the blockchain
     blockchain_data = data[data["blockchain"] == blockchain]
     
-    # Latest ETH rate
-    latest_eth_rate = blockchain_data["eth_rate"].dropna().iloc[-1] if not blockchain_data["eth_rate"].dropna().empty else None
+    # Safely extract latest ETH rate
+    latest_eth_rate = None
+    if not blockchain_data["eth_rate"].dropna().empty:
+        latest_eth_rate = blockchain_data["eth_rate"].dropna().iloc[-1]
     
-    # Ethereum's latest ETH rate for comparison
-    ethereum_latest_rate = data[data["blockchain"] == "ethereum"]["eth_rate"].dropna().iloc[-1]
-    
-    # Relative ETH rate difference
-    relative_difference = (latest_eth_rate - ethereum_latest_rate) / ethereum_latest_rate if latest_eth_rate is not None else None
+    # Calculate relative difference with additional safety checks
+    relative_difference = None
+    if latest_eth_rate is not None and ethereum_latest_rate is not None and ethereum_latest_rate != 0:
+        relative_difference = (latest_eth_rate - ethereum_latest_rate) / ethereum_latest_rate
     
     # Find standard deviation from previous relative difference calculation
     std_dev = None
@@ -449,7 +456,9 @@ for blockchain in selected_blockchains:
                 break
     
     # Liquidity
-    liquidity = blockchain_data["weeth_liquidity"].dropna().iloc[-1] if not blockchain_data["weeth_liquidity"].dropna().empty else None
+    liquidity = None
+    if not blockchain_data["weeth_liquidity"].dropna().empty:
+        liquidity = blockchain_data["weeth_liquidity"].dropna().iloc[-1]
     
     # Collateral at Risk (if available in session state)
     collateral_at_risk = None
