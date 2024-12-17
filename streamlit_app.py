@@ -134,7 +134,7 @@ summary_df = summary_df.rename(columns={"Slope": "Slope (ETH Rate Change)", "Res
 st.dataframe(summary_df.style.format({"Slope (ETH Rate Change)": "{:.6f}", "Std Dev of Residuals": "{:.6f}"}))
 
 # Footer Information
-st.info("The regression line represents the trend of ETH rates over time whereas the standard deviation is a measure for the volatility on the same time window (although it is unclear how to extend volatility to egged tokens)")
+st.info("The regression line represents the trend of ETH rates over time whereas the standard deviation is a measure for the volatility on the same time window (although it is unclear how to extend volatility to pegged tokens)")
 
 ### Relative ETH Rate Difference Plot ###
 st.subheader("Relative Deviation from Ethereum")
@@ -229,6 +229,9 @@ table_df = pd.DataFrame(table_data)
 
 # Show the table in Streamlit
 st.table(table_df)
+
+# Footer Information
+st.info("eETH can only be minted directly on ethereum, linea, base, and blast. Blast seems to have relatively high fluctuations compared to the other chains. ")
 
 
 st.subheader("Weeth Liquidity Across Blockchains")
