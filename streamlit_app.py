@@ -333,3 +333,17 @@ else:
 # Step 5: Additional functionality (if needed)
 st.write("You can upload both CSV files and view their corresponding pie charts above.")
 
+# Function to get the current price of ETH from CoinGecko
+def get_eth_price():
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
+    response = requests.get(url)
+    data = response.json()
+    return data['ethereum']['usd']
+
+# Fetch the current ETH price
+try:
+    eth_price = get_eth_price()
+    st.write(f"The current price of Ethereum (ETH) is: ${eth_price} USD")
+except Exception as e:
+    st.error(f"Error fetching ETH price: {e}")
+    eth_price = 0
