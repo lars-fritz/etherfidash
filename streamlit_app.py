@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import requests
 from dune_client.client import DuneClient
 from sklearn.linear_model import LinearRegression
 
