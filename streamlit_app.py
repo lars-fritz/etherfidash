@@ -66,25 +66,7 @@ fig_eth_rate.update_layout(
 )
 st.plotly_chart(fig_eth_rate)
 
-# Weeth Liquidity Plot
-st.subheader("Weeth Liquidity Over Time")
-fig_liquidity = go.Figure()
-for blockchain in selected_blockchains:
-    blockchain_data = data[data["blockchain"] == blockchain]
-    if not blockchain_data.empty:
-        blockchain_data_clean = blockchain_data[["day", "weeth_liquidity"]].dropna()
-        blockchain_data_clean["day"] = pd.to_datetime(blockchain_data_clean["day"])
-        fig_liquidity.add_trace(go.Scatter(x=blockchain_data_clean["day"],
-                                           y=blockchain_data_clean["weeth_liquidity"],
-                                           mode='lines+markers', name=f"{blockchain} Liquidity"))
 
-fig_liquidity.update_layout(
-    title="Weeth Liquidity for Selected Blockchains",
-    xaxis_title="Day",
-    yaxis_title="Weeth Liquidity",
-    template="plotly_white"
-)
-st.plotly_chart(fig_liquidity)
 
 # Summary
 st.subheader("Summary Statistics")
