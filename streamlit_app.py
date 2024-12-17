@@ -135,7 +135,8 @@ st.dataframe(summary_df.style.format({"Slope (ETH Rate Change)": "{:.6f}", "Std 
 
 # Footer Information
 st.info("The regression line represents the trend of ETH rates over time, and the summary statistics provide insights into each blockchain's ETH rate changes.")
-### Weeth Liquidity Plot ###
+
+
 st.subheader("Weeth Liquidity Across Blockchains")
 fig_liquidity = go.Figure()
 
@@ -155,7 +156,7 @@ for blockchain in selected_blockchains:
             x=blockchain_liquidity["day"],
             y=blockchain_liquidity["weeth_liquidity"],
             mode='markers',
-            marker=dict(size=8, color=color_map[blockchain]),
+            marker=dict(size=4, color=color_map[blockchain]),  # Reduced dot size here
             name=f"{blockchain} Weeth Liquidity"
         ))
 
@@ -171,4 +172,3 @@ st.plotly_chart(fig_liquidity)
 
 # Footer
 st.info("Weeth Liquidity shows how much liquidity is available on each blockchain over time.")
-
