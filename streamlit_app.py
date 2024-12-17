@@ -368,7 +368,7 @@ if uploaded_risk_file is not None:
         risk_data['Value (ETH)'] = None
 
     # Show the preview table with the ETH column
-    st.write(risk_data[['Label', 'Value', 'Value (ETH)']])
+    st.write(risk_data[['Label', 'Value ($)', 'Value (ETH)']])
 
     # Store the collateral risk data in session state for later use
     st.session_state.risk_data = risk_data
