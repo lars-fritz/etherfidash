@@ -277,6 +277,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import requests  # For fetching data from CoinGecko API
 
+
 # Title of the Streamlit app
 st.title("Collateral Analysis and CSV Upload")
 
@@ -295,6 +296,14 @@ except Exception as e:
     st.error(f"Error fetching ETH price: {e}")
     eth_price = 0
 
+# Mapping to normalize the labels
+label_mapping = {
+    'Arbitrum-main': 'arbitrum',
+    'Base-main': 'base',
+    'Ethereum-main': 'ethereum',
+    'Scroll-main': 'scroll'
+}
+
 # Step 1: Upload the Total Collateral in Dollar CSV Data
 st.subheader("Upload Total Collateral in Dollar Data")
 uploaded_collateral_file = st.file_uploader("Upload a CSV file for Total Collateral (in Dollar)", type=["csv"])
@@ -306,6 +315,9 @@ if uploaded_collateral_file is not None:
     
     # Display the first few rows of the uploaded data for user verification
     st.write("Preview of the Total Collateral in Dollar Data:")
+
+    # Replace the labels using the mapping dictionary
+    collateral_data['Label'] = collateral_data['Label'].replace(label_mapping)
 
     # Convert collateral values to ETH if ETH price is available
     if eth_price > 0:
@@ -360,6 +372,9 @@ if uploaded_risk_file is not None:
     
     # Display the first few rows of the uploaded data for user verification
     st.write("Preview of the Collateral at Risk Data:")
+
+    # Replace the labels using the mapping dictionary
+    risk_data['Label'] = risk_data['Label'].replace(label_mapping)
 
     # Convert collateral risk values to ETH if ETH price is available
     if eth_price > 0:
