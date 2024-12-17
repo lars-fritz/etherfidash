@@ -447,8 +447,10 @@ summary_rows = []
 # Safely extract Ethereum's latest rate
 def safe_get_latest_rate(data, blockchain):
     blockchain_data = data[data["blockchain"] == blockchain]
-    eth_rates = blockchain_data["eth_rate"].dropna()
-    return float(eth_rates.iloc[-1]) if not eth_rates.empty else None
+    blockchain_data['day'] = pd.to_datetime(blockchain_data['day'])
+    latest_data = blockchain_data.loc[blockchain_data['day'] == blockchain_data['day'].max()]
+    eth_rates = latest_data["eth_rate"].dropna()
+    return float(eth_rates.iloc[0]) if not eth_rates.empty else None
 
 # Safely calculate relative difference
 def safe_calculate_relative_difference(latest_rate, baseline_rate):
@@ -481,9 +483,12 @@ for blockchain in selected_blockchains:
                 std_dev = row['Standard Deviation']
                 break
     
-    # Liquidity
-    liquidity_data = data[data["blockchain"] == blockchain]["weeth_liquidity"].dropna()
-    liquidity = float(liquidity_data.iloc[-1]) if not liquidity_data.empty else None
+    # Liquidity (using the same approach as ETH rate)
+    blockchain_data = data[data["blockchain"] == blockchain]
+    blockchain_data['day'] = pd.to_datetime(blockchain_data['day'])
+    latest_data = blockchain_data.loc[blockchain_data['day'] == blockchain_data['day'].max()]
+    liquidity_data = latest_data["weeth_liquidity"].dropna()
+    liquidity = float(liquidity_data.iloc[0]) if not liquidity_data.empty else None
     
     # Collateral at Risk (if available in session state)
     collateral_at_risk_eth = None
