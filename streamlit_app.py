@@ -271,7 +271,23 @@ st.plotly_chart(fig_liquidity)
 # Footer
 st.info("Weeth Liquidity shows how much liquidity is available on each blockchain over time.")
 # Title of the Streamlit app
+# Title of the Streamlit app
 st.title("Collateral Analysis and CSV Upload")
+
+# Function to get the current price of ETH from CoinGecko
+def get_eth_price():
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
+    response = requests.get(url)
+    data = response.json()
+    return data['ethereum']['usd']
+
+# Fetch the current ETH price
+try:
+    eth_price = get_eth_price()
+    st.write(f"The current price of Ethereum (ETH) is: ${eth_price} USD")
+except Exception as e:
+    st.error(f"Error fetching ETH price: {e}")
+    eth_price = 0
 
 # Step 1: Upload the Total Collateral in Dollar CSV Data
 st.subheader("Upload Total Collateral in Dollar Data")
@@ -289,16 +305,33 @@ if uploaded_collateral_file is not None:
     # Store the collateral data in session state for later use
     st.session_state.collateral_data = collateral_data
 
-    # Generate a pie chart for Total Collateral
-    fig_collateral = go.Figure(go.Pie(
+    # Convert collateral values to ETH
+    if eth_price > 0:
+        collateral_data['Value (ETH)'] = collateral_data['Value'] / eth_price
+    else:
+        collateral_data['Value (ETH)'] = None
+    
+    # Generate a pie chart for Total Collateral in Dollar
+    fig_collateral_usd = go.Figure(go.Pie(
         labels=collateral_data['Label'],
         values=collateral_data['Value'],
         hole=0.3,
         title="Total Collateral in Dollar"
     ))
 
-    # Display the pie chart
-    st.plotly_chart(fig_collateral)
+    # Display the pie chart for Total Collateral in Dollar
+    st.plotly_chart(fig_collateral_usd)
+
+    # Generate a pie chart for Total Collateral in ETH
+    fig_collateral_eth = go.Figure(go.Pie(
+        labels=collateral_data['Label'],
+        values=collateral_data['Value (ETH)'],
+        hole=0.3,
+        title="Total Collateral in ETH"
+    ))
+
+    # Display the pie chart for Total Collateral in ETH
+    st.plotly_chart(fig_collateral_eth)
 else:
     st.write("No file uploaded for Total Collateral. Please upload a CSV file.")
 
@@ -318,33 +351,36 @@ if uploaded_risk_file is not None:
     # Store the collateral risk data in session state for later use
     st.session_state.risk_data = risk_data
 
-    # Generate a pie chart for Collateral at Risk
-    fig_risk = go.Figure(go.Pie(
+    # Convert collateral risk values to ETH
+    if eth_price > 0:
+        risk_data['Value (ETH)'] = risk_data['Value'] / eth_price
+    else:
+        risk_data['Value (ETH)'] = None
+
+    # Generate a pie chart for Collateral at Risk in Dollar
+    fig_risk_usd = go.Figure(go.Pie(
         labels=risk_data['Label'],
         values=risk_data['Value'],
         hole=0.3,
         title="Collateral at Risk"
     ))
 
-    # Display the pie chart
-    st.plotly_chart(fig_risk)
+    # Display the pie chart for Collateral at Risk in Dollar
+    st.plotly_chart(fig_risk_usd)
+
+    # Generate a pie chart for Collateral at Risk in ETH
+    fig_risk_eth = go.Figure(go.Pie(
+        labels=risk_data['Label'],
+        values=risk_data['Value (ETH)'],
+        hole=0.3,
+        title="Collateral at Risk in ETH"
+    ))
+
+    # Display the pie chart for Collateral at Risk in ETH
+    st.plotly_chart(fig_risk_eth)
 else:
     st.write("No file uploaded for Collateral at Risk. Please upload a CSV file.")
 
 # Step 5: Additional functionality (if needed)
 st.write("You can upload both CSV files and view their corresponding pie charts above.")
 
-# Function to get the current price of ETH from CoinGecko
-def get_eth_price():
-    url = "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
-    response = requests.get(url)
-    data = response.json()
-    return data['ethereum']['usd']
-
-# Fetch the current ETH price
-try:
-    eth_price = get_eth_price()
-    st.write(f"The current price of Ethereum (ETH) is: ${eth_price} USD")
-except Exception as e:
-    st.error(f"Error fetching ETH price: {e}")
-    eth_price = 0
