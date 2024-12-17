@@ -181,6 +181,9 @@ relative_diff_colors = {
     'base': 'orange', 'linea': 'pink', 'optimism': 'teal'
 }
 
+# Table data for averages and standard deviations
+table_data = []
+
 # Plot relative differences for each selected blockchain
 for blockchain in relative_blockchains:
     if blockchain == "ethereum":
@@ -201,31 +204,12 @@ for blockchain in relative_blockchains:
         avg_diff = blockchain_relative["relative_difference"].mean()
         std_diff = blockchain_relative["relative_difference"].std()
 
-        # Add average line
-        fig_relative_diff.add_trace(go.Scatter(
-            x=[blockchain_relative["day"].min(), blockchain_relative["day"].max()],
-            y=[avg_diff, avg_diff],
-            mode='lines',
-            line=dict(dash='dash', color=relative_diff_colors.get(blockchain, "gray")),
-            name=f"{blockchain.capitalize()} Average Relative Difference"
-        ))
-
-        # Add standard deviation lines
-        fig_relative_diff.add_trace(go.Scatter(
-            x=[blockchain_relative["day"].min(), blockchain_relative["day"].max()],
-            y=[avg_diff + std_diff, avg_diff + std_diff],
-            mode='lines',
-            line=dict(dash='dot', color=relative_diff_colors.get(blockchain, "gray")),
-            name=f"{blockchain.capitalize()} +1 Std Dev"
-        ))
-
-        fig_relative_diff.add_trace(go.Scatter(
-            x=[blockchain_relative["day"].min(), blockchain_relative["day"].max()],
-            y=[avg_diff - std_diff, avg_diff - std_diff],
-            mode='lines',
-            line=dict(dash='dot', color=relative_diff_colors.get(blockchain, "gray")),
-            name=f"{blockchain.capitalize()} -1 Std Dev"
-        ))
+        # Append the results to the table data
+        table_data.append({
+            "Blockchain": blockchain.capitalize(),
+            "Average Relative Difference": round(avg_diff, 4),
+            "Standard Deviation": round(std_diff, 4)
+        })
 
 # Update layout for the plot
 fig_relative_diff.update_layout(
@@ -239,7 +223,13 @@ fig_relative_diff.update_layout(
 # Display the plot in Streamlit
 st.plotly_chart(fig_relative_diff)
 
-st.info("It is important to note the eETH can only be minted on ethereum, blast, base, and linea. ")
+# Display the table below the plot with average and standard deviation for each blockchain
+st.subheader("Average and Standard Deviation for Each Blockchain")
+table_df = pd.DataFrame(table_data)
+
+# Show the table in Streamlit
+st.table(table_df)
+
 
 st.subheader("Weeth Liquidity Across Blockchains")
 fig_liquidity = go.Figure()
