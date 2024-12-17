@@ -136,43 +136,6 @@ st.dataframe(summary_df.style.format({"Slope (ETH Rate Change)": "{:.6f}", "Std 
 # Footer Information
 st.info("The regression line represents the trend of ETH rates over time, and the summary statistics provide insights into each blockchain's ETH rate changes.")
 
-
-st.subheader("Weeth Liquidity Across Blockchains")
-fig_liquidity = go.Figure()
-
-# Process liquidity data
-liquidity_data = {}
-
-for blockchain in selected_blockchains:
-    blockchain_data = data[data["blockchain"] == blockchain]
-    blockchain_liquidity = blockchain_data[["day", "weeth_liquidity"]].dropna()
-
-    blockchain_liquidity["weeth_liquidity"] = pd.to_numeric(blockchain_liquidity["weeth_liquidity"], errors='coerce')
-    blockchain_liquidity["day"] = pd.to_datetime(blockchain_liquidity["day"], errors='coerce')
-    blockchain_liquidity = blockchain_liquidity.sort_values(by="day").reset_index(drop=True)
-
-    if not blockchain_liquidity.empty:
-        fig_liquidity.add_trace(go.Scatter(
-            x=blockchain_liquidity["day"],
-            y=blockchain_liquidity["weeth_liquidity"],
-            mode='markers',
-            marker=dict(size=4, color=color_map[blockchain]),  # Reduced dot size here
-            name=f"{blockchain} Weeth Liquidity"
-        ))
-
-# Layout for Weeth Liquidity
-fig_liquidity.update_layout(
-    title="Weeth Liquidity for Selected Blockchains Over Time",
-    xaxis_title="Day",
-    yaxis_title="Weeth Liquidity",
-    legend=dict(yanchor="top", y=0.9, xanchor="left", x=1.02),
-    template="plotly_white"
-)
-st.plotly_chart(fig_liquidity)
-
-# Footer
-st.info("Weeth Liquidity shows how much liquidity is available on each blockchain over time.")
-
 ### Relative ETH Rate Difference Plot ###
 st.subheader("Relative ETH Rate Difference Compared to Ethereum")
 
@@ -244,3 +207,42 @@ fig_relative_diff.update_layout(
 
 # Display the plot in Streamlit
 st.plotly_chart(fig_relative_diff)
+
+
+st.subheader("Weeth Liquidity Across Blockchains")
+fig_liquidity = go.Figure()
+
+# Process liquidity data
+liquidity_data = {}
+
+for blockchain in selected_blockchains:
+    blockchain_data = data[data["blockchain"] == blockchain]
+    blockchain_liquidity = blockchain_data[["day", "weeth_liquidity"]].dropna()
+
+    blockchain_liquidity["weeth_liquidity"] = pd.to_numeric(blockchain_liquidity["weeth_liquidity"], errors='coerce')
+    blockchain_liquidity["day"] = pd.to_datetime(blockchain_liquidity["day"], errors='coerce')
+    blockchain_liquidity = blockchain_liquidity.sort_values(by="day").reset_index(drop=True)
+
+    if not blockchain_liquidity.empty:
+        fig_liquidity.add_trace(go.Scatter(
+            x=blockchain_liquidity["day"],
+            y=blockchain_liquidity["weeth_liquidity"],
+            mode='markers',
+            marker=dict(size=4, color=color_map[blockchain]),  # Reduced dot size here
+            name=f"{blockchain} Weeth Liquidity"
+        ))
+
+# Layout for Weeth Liquidity
+fig_liquidity.update_layout(
+    title="Weeth Liquidity for Selected Blockchains Over Time",
+    xaxis_title="Day",
+    yaxis_title="Weeth Liquidity",
+    legend=dict(yanchor="top", y=0.9, xanchor="left", x=1.02),
+    template="plotly_white"
+)
+st.plotly_chart(fig_liquidity)
+
+# Footer
+st.info("Weeth Liquidity shows how much liquidity is available on each blockchain over time.")
+
+
