@@ -269,5 +269,67 @@ st.plotly_chart(fig_liquidity)
 
 # Footer
 st.info("Weeth Liquidity shows how much liquidity is available on each blockchain over time.")
+# Title of the Streamlit app
+st.title("Collateral Analysis and CSV Upload")
 
+# Step 1: Upload the Total Collateral in Dollar CSV Data
+st.subheader("Upload Total Collateral in Dollar Data")
+uploaded_collateral_file = st.file_uploader("Upload a CSV file for Total Collateral (in Dollar)", type=["csv"])
+
+# Check if the file is uploaded
+if uploaded_collateral_file is not None:
+    # Step 2: Store the uploaded Total Collateral data
+    collateral_data = pd.read_csv(uploaded_collateral_file)
+    
+    # Display the first few rows of the uploaded data for user verification
+    st.write("Preview of the Total Collateral in Dollar Data:")
+    st.write(collateral_data.head())
+
+    # Store the collateral data in session state for later use
+    st.session_state.collateral_data = collateral_data
+
+    # Generate a pie chart for Total Collateral
+    fig_collateral = go.Figure(go.Pie(
+        labels=collateral_data['Label'],
+        values=collateral_data['Value'],
+        hole=0.3,
+        title="Total Collateral in Dollar"
+    ))
+
+    # Display the pie chart
+    st.plotly_chart(fig_collateral)
+else:
+    st.write("No file uploaded for Total Collateral. Please upload a CSV file.")
+
+# Step 3: Upload the Collateral at Risk CSV Data
+st.subheader("Upload Collateral at Risk Data")
+uploaded_risk_file = st.file_uploader("Upload a CSV file for Collateral at Risk", type=["csv"])
+
+# Check if the file is uploaded
+if uploaded_risk_file is not None:
+    # Step 4: Store the uploaded Collateral at Risk data
+    risk_data = pd.read_csv(uploaded_risk_file)
+    
+    # Display the first few rows of the uploaded data for user verification
+    st.write("Preview of the Collateral at Risk Data:")
+    st.write(risk_data.head())
+
+    # Store the collateral risk data in session state for later use
+    st.session_state.risk_data = risk_data
+
+    # Generate a pie chart for Collateral at Risk
+    fig_risk = go.Figure(go.Pie(
+        labels=risk_data['Label'],
+        values=risk_data['Value'],
+        hole=0.3,
+        title="Collateral at Risk"
+    ))
+
+    # Display the pie chart
+    st.plotly_chart(fig_risk)
+else:
+    st.write("No file uploaded for Collateral at Risk. Please upload a CSV file.")
+
+# Step 5: Additional functionality (if needed)
+st.write("You can upload both CSV files and view their corresponding pie charts above.")
 
