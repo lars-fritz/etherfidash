@@ -8,3 +8,4 @@ selenium
 numpy
 dune-client
 scikit-learn
+requests
