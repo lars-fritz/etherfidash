@@ -79,7 +79,7 @@ color_palette = [
 color_map = {blockchain: color_palette[i % len(color_palette)] for i, blockchain in enumerate(blockchain_options)}
 
 # ETH Rate Plot with Regression
-st.subheader("ETH Rates across blockchains and some statistics")
+st.subheader("ETH Rates across blockchains including some statistics")
 fig_eth_rate = go.Figure()
 
 # Summary statistics dictionary
@@ -128,16 +128,16 @@ fig_eth_rate.update_layout(
 st.plotly_chart(fig_eth_rate)
 
 # Display Summary Statistics Table
-st.subheader("Summary Statistics")
+st.subheader("Linear regression: slope can be interpreted as drift and standard deviation as volatility")
 summary_df = pd.DataFrame.from_dict(summary_stats, orient='index')
 summary_df = summary_df.rename(columns={"Slope": "Slope (ETH Rate Change)", "Residuals Std Dev": "Std Dev of Residuals"})
 st.dataframe(summary_df.style.format({"Slope (ETH Rate Change)": "{:.6f}", "Std Dev of Residuals": "{:.6f}"}))
 
 # Footer Information
-st.info("The regression line represents the trend of ETH rates over time, and the summary statistics provide insights into each blockchain's ETH rate changes.")
+st.info("The regression line represents the trend of ETH rates over time whereas the standard deviation is a measure for the volatility on the same time window (although it is unclear how to extend volatility to egged tokens)")
 
 ### Relative ETH Rate Difference Plot ###
-st.subheader("Relative ETH Rate Difference Compared to Ethereum")
+st.subheader("Relative deviation from ethereum")
 
 # Initialize a new interactive plot
 fig_relative_diff = go.Figure()
