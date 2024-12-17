@@ -5,3 +5,4 @@ matplotlib
 plotly>=5.0.0
 bs4
 selenium
+numpy
