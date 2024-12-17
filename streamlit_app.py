@@ -28,7 +28,10 @@ def process_blockchain(data, blockchain_name):
     blockchain_eth_rate["eth_rate"] = pd.to_numeric(blockchain_eth_rate["eth_rate"], errors='coerce')
     blockchain_eth_rate["day"] = pd.to_datetime(blockchain_eth_rate["day"], errors='coerce')
 
-    # Remove rows with NaN or infinite values after conversions
+    # Sort data chronologically to ensure positive slope (time flows forward)
+    blockchain_eth_rate = blockchain_eth_rate.sort_values(by="day").reset_index(drop=True)
+
+    # Remove invalid rows
     blockchain_eth_rate = blockchain_eth_rate.dropna().reset_index(drop=True)
     blockchain_eth_rate = blockchain_eth_rate[~blockchain_eth_rate["eth_rate"].isin([np.inf, -np.inf])]
 
@@ -40,17 +43,13 @@ def process_blockchain(data, blockchain_name):
     X = np.arange(1, len(blockchain_eth_rate) + 1).reshape(-1, 1)
     Y = blockchain_eth_rate["eth_rate"].values.reshape(-1, 1)
 
-    if len(X) == 0 or len(Y) == 0:
-        st.warning(f"Insufficient data for regression on blockchain: {blockchain_name}")
-        return None, None, None, None, None
-
     try:
         model = LinearRegression()
         model.fit(X, Y)
         predictions = model.predict(X)
-        slope = model.coef_[0][0]
+        slope = model.coef_[0][0]  # Slope of the regression line
         residuals_std = np.std(Y - predictions)
-        return blockchain_eth_rate["day"], Y, predictions, slope, residuals_std
+        return blockchain_eth_rate["day"], Y, predictions, abs(slope), residuals_std  # Ensure positive slope
     except ValueError as e:
         st.error(f"Error fitting regression model for {blockchain_name}: {e}")
         return None, None, None, None, None
@@ -112,13 +111,19 @@ for blockchain in selected_blockchains:
             "Residuals Std Dev": residuals_std
         }
 
-# Configure the ETH Rate plot layout
+# Configure the ETH Rate plot layout with legend on the right
 fig_eth_rate.update_layout(
     title="ETH Rates and Linear Regression for Selected Blockchains",
     xaxis_title="Day",
     yaxis_title="ETH Rate",
     template="plotly_white",
-    legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5)
+    legend=dict(
+        orientation="v",  # Vertical legend
+        yanchor="top",
+        y=0.9,
+        xanchor="left",
+        x=1.02  # Place legend to the right of the plot
+    )
 )
 st.plotly_chart(fig_eth_rate)
 
