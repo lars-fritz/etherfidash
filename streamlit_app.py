@@ -1,6 +1,3 @@
-# Install required libraries (run these in your terminal before running the app)
-# !pip install streamlit dune_client dataclasses_json matplotlib plotly scikit-learn pandas numpy
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -9,74 +6,108 @@ from dune_client.client import DuneClient
 from sklearn.linear_model import LinearRegression
 
 # API Setup
-DUNE_API_KEY = 'Y7zXGTwljFiiIOw3MsXUqpkTf6DofTQH'
+DUNE_API_KEY = 'Y7zXGTwljFiiIOw3MsXUqpkTf6DofTQH'  # Replace with your actual Dune API key
 QUERY_ID = 4430040
 dune = DuneClient(api_key=DUNE_API_KEY)
 
-# Fetch data from Dune API
+# Cache data fetching to improve performance
 @st.cache_data
 def fetch_data():
     return dune.get_latest_result_dataframe(query=QUERY_ID)
 
 data = fetch_data()
 
-# Data processing functions
+# Function to process blockchain data and calculate linear regression
 def process_blockchain(data, blockchain_name):
     blockchain_data = data[data["blockchain"] == blockchain_name]
     blockchain_eth_rate = blockchain_data[["day", "eth_rate"]].dropna()
+
+    # Convert to correct formats
     blockchain_eth_rate["eth_rate"] = pd.to_numeric(blockchain_eth_rate["eth_rate"], errors='coerce')
     blockchain_eth_rate["day"] = pd.to_datetime(blockchain_eth_rate["day"])
     blockchain_eth_rate = blockchain_eth_rate.sort_values(by="day").reset_index(drop=True)
 
     if blockchain_eth_rate.empty:
-        return None, None, None, None
+        return None, None, None, None, None
 
+    # Prepare linear regression
     X = np.arange(1, len(blockchain_eth_rate) + 1).reshape(-1, 1)
     Y = blockchain_eth_rate["eth_rate"].values.reshape(-1, 1)
     model = LinearRegression()
     model.fit(X, Y)
     predictions = model.predict(X)
     slope = model.coef_[0][0]
-    return blockchain_eth_rate["day"], Y, predictions, slope
+    residuals_std = np.std(Y - predictions)
+    return blockchain_eth_rate["day"], Y, predictions, slope, residuals_std
 
-# Streamlit Page Title
+# Streamlit App Title
 st.title("Interactive Blockchain ETH Rate and Weeth Liquidity Dashboard")
 
-# Blockchain Selection
-selected_blockchains = st.multiselect("Select Blockchains to Visualize",
-                                      options=data["blockchain"].unique(),
-                                      default=["scroll", "arbitrum", "ethereum"])
+# Allow selection of "All Blockchains"
+blockchain_options = list(data["blockchain"].unique())
+blockchain_options.insert(0, "All Blockchains")  # Add an "All Blockchains" option
+selected_blockchains = st.multiselect(
+    "Select Blockchains to Visualize",
+    options=blockchain_options,
+    default=["scroll", "arbitrum", "ethereum"]
+)
 
-# Plot ETH Rates
+# Adjust for "All Blockchains" selection
+if "All Blockchains" in selected_blockchains:
+    selected_blockchains = [b for b in blockchain_options if b != "All Blockchains"]
+
+# Define colors for consistency
+color_palette = [
+    'green', 'blue', 'red', 'orange', 'purple', 'teal', 'pink', 'brown', 'cyan', 'magenta'
+]
+color_map = {blockchain: color_palette[i % len(color_palette)] for i, blockchain in enumerate(blockchain_options)}
+
+# ETH Rate Plot with Regression
 st.subheader("ETH Rates with Linear Regression")
 fig_eth_rate = go.Figure()
+
+summary_stats = {}  # Store summary statistics for each blockchain
+
 for blockchain in selected_blockchains:
-    days, Y, predictions, slope = process_blockchain(data, blockchain)
+    days, Y, predictions, slope, residuals_std = process_blockchain(data, blockchain)
+
     if days is not None:
-        fig_eth_rate.add_trace(go.Scatter(x=days, y=Y.flatten(),
-                                          mode='markers', name=f"{blockchain} ETH Rate"))
-        fig_eth_rate.add_trace(go.Scatter(x=days, y=predictions.flatten(),
-                                          mode='lines', name=f"{blockchain} Regression (Slope: {slope:.4f})"))
+        # Add scatter plot for actual ETH rates
+        fig_eth_rate.add_trace(go.Scatter(
+            x=days, y=Y.flatten(),
+            mode='markers',
+            marker=dict(color=color_map[blockchain]),
+            name=f"{blockchain} ETH Rate"
+        ))
+
+        # Add line plot for regression
+        fig_eth_rate.add_trace(go.Scatter(
+            x=days, y=predictions.flatten(),
+            mode='lines',
+            line=dict(color=color_map[blockchain], width=2),
+            name=f"{blockchain} Regression (Slope: {slope:.6f})"
+        ))
+
+        # Save summary stats
+        summary_stats[blockchain] = {
+            "Slope": slope,
+            "Residuals Std Dev": residuals_std
+        }
 
 fig_eth_rate.update_layout(
-    title="ETH Rates for Selected Blockchains",
+    title="ETH Rates and Linear Regression for Selected Blockchains",
     xaxis_title="Day",
     yaxis_title="ETH Rate",
     template="plotly_white"
 )
 st.plotly_chart(fig_eth_rate)
 
-
-
-# Summary
+# Summary Table
 st.subheader("Summary Statistics")
-summary = {}
-for blockchain in selected_blockchains:
-    _, Y, predictions, _ = process_blockchain(data, blockchain)
-    if Y is not None:
-        residuals_std = np.std(Y - predictions)
-        summary[blockchain] = f"Standard Deviation of Residuals: {residuals_std:.4f}"
+summary_df = pd.DataFrame.from_dict(summary_stats, orient='index')
+summary_df = summary_df.rename(columns={"Slope": "Slope (ETH Rate Change)", "Residuals Std Dev": "Std Dev of Residuals"})
+st.dataframe(summary_df.style.format({"Slope (ETH Rate Change)": "{:.6f}", "Std Dev of Residuals": "{:.6f}"}))
 
-for blockchain, stat in summary.items():
-    st.write(f"**{blockchain}**: {stat}")
+# Footer Note
+st.info("The regression line represents the trend of ETH rates over time, and the summary statistics provide insights into each blockchain's ETH rate changes.")
 
