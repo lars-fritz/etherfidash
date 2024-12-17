@@ -24,23 +24,36 @@ def process_blockchain(data, blockchain_name):
     blockchain_data = data[data["blockchain"] == blockchain_name]
     blockchain_eth_rate = blockchain_data[["day", "eth_rate"]].dropna()
 
-    # Convert to correct formats
+    # Convert data to correct formats
     blockchain_eth_rate["eth_rate"] = pd.to_numeric(blockchain_eth_rate["eth_rate"], errors='coerce')
-    blockchain_eth_rate["day"] = pd.to_datetime(blockchain_eth_rate["day"])
-    blockchain_eth_rate = blockchain_eth_rate.sort_values(by="day").reset_index(drop=True)
+    blockchain_eth_rate["day"] = pd.to_datetime(blockchain_eth_rate["day"], errors='coerce')
+
+    # Remove rows with NaN or infinite values after conversions
+    blockchain_eth_rate = blockchain_eth_rate.dropna().reset_index(drop=True)
+    blockchain_eth_rate = blockchain_eth_rate[~blockchain_eth_rate["eth_rate"].isin([np.inf, -np.inf])]
 
     if blockchain_eth_rate.empty:
+        st.warning(f"No valid data available for blockchain: {blockchain_name}")
         return None, None, None, None, None
 
     # Prepare linear regression
     X = np.arange(1, len(blockchain_eth_rate) + 1).reshape(-1, 1)
     Y = blockchain_eth_rate["eth_rate"].values.reshape(-1, 1)
-    model = LinearRegression()
-    model.fit(X, Y)
-    predictions = model.predict(X)
-    slope = model.coef_[0][0]
-    residuals_std = np.std(Y - predictions)
-    return blockchain_eth_rate["day"], Y, predictions, slope, residuals_std
+
+    if len(X) == 0 or len(Y) == 0:
+        st.warning(f"Insufficient data for regression on blockchain: {blockchain_name}")
+        return None, None, None, None, None
+
+    try:
+        model = LinearRegression()
+        model.fit(X, Y)
+        predictions = model.predict(X)
+        slope = model.coef_[0][0]
+        residuals_std = np.std(Y - predictions)
+        return blockchain_eth_rate["day"], Y, predictions, slope, residuals_std
+    except ValueError as e:
+        st.error(f"Error fitting regression model for {blockchain_name}: {e}")
+        return None, None, None, None, None
 
 # Streamlit App Title
 st.title("Interactive Blockchain ETH Rate and Weeth Liquidity Dashboard")
