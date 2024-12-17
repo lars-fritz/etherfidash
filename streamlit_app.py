@@ -423,29 +423,34 @@ st.subheader("Blockchain Performance Summary")
 # Prepare summary data
 summary_rows = []
 
-# Ensure ethereum latest rate is safely extracted
-ethereum_latest_rate = None
-ethereum_data = data[data["blockchain"] == "ethereum"]
-if not ethereum_data["eth_rate"].dropna().empty:
-    ethereum_latest_rate = ethereum_data["eth_rate"].dropna().iloc[-1]
+# Safely extract Ethereum's latest rate
+def safe_get_latest_rate(data, blockchain):
+    blockchain_data = data[data["blockchain"] == blockchain]
+    eth_rates = blockchain_data["eth_rate"].dropna()
+    return float(eth_rates.iloc[-1]) if not eth_rates.empty else None
+
+# Safely calculate relative difference
+def safe_calculate_relative_difference(latest_rate, baseline_rate):
+    if latest_rate is not None and baseline_rate is not None and baseline_rate != 0:
+        try:
+            return (latest_rate - baseline_rate) / baseline_rate
+        except (TypeError, ZeroDivisionError):
+            return None
+    return None
+
+# Get Ethereum's latest rate
+ethereum_latest_rate = safe_get_latest_rate(data, "ethereum")
 
 for blockchain in selected_blockchains:
     # Skip Ethereum in comparisons
     if blockchain == "ethereum":
         continue
     
-    # Extract latest data for the blockchain
-    blockchain_data = data[data["blockchain"] == blockchain]
+    # Get latest ETH rate for the blockchain
+    latest_eth_rate = safe_get_latest_rate(data, blockchain)
     
-    # Safely extract latest ETH rate
-    latest_eth_rate = None
-    if not blockchain_data["eth_rate"].dropna().empty:
-        latest_eth_rate = blockchain_data["eth_rate"].dropna().iloc[-1]
-    
-    # Calculate relative difference with additional safety checks
-    relative_difference = None
-    if latest_eth_rate is not None and ethereum_latest_rate is not None and ethereum_latest_rate != 0:
-        relative_difference = (latest_eth_rate - ethereum_latest_rate) / ethereum_latest_rate
+    # Calculate relative difference
+    relative_difference = safe_calculate_relative_difference(latest_eth_rate, ethereum_latest_rate)
     
     # Find standard deviation from previous relative difference calculation
     std_dev = None
@@ -456,9 +461,8 @@ for blockchain in selected_blockchains:
                 break
     
     # Liquidity
-    liquidity = None
-    if not blockchain_data["weeth_liquidity"].dropna().empty:
-        liquidity = blockchain_data["weeth_liquidity"].dropna().iloc[-1]
+    liquidity_data = data[data["blockchain"] == blockchain]["weeth_liquidity"].dropna()
+    liquidity = float(liquidity_data.iloc[-1]) if not liquidity_data.empty else None
     
     # Collateral at Risk (if available in session state)
     collateral_at_risk = None
@@ -466,8 +470,8 @@ for blockchain in selected_blockchains:
     if hasattr(st.session_state, 'risk_data'):
         risk_row = st.session_state.risk_data[st.session_state.risk_data['Label'] == blockchain]
         if not risk_row.empty:
-            collateral_at_risk = risk_row['Value'].values[0]
-            collateral_at_risk_eth = risk_row['Value (ETH)'].values[0]
+            collateral_at_risk = float(risk_row['Value'].values[0])
+            collateral_at_risk_eth = float(risk_row['Value (ETH)'].values[0])
     
     # Prepare row for summary
     summary_row = {
