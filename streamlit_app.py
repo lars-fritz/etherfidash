@@ -272,6 +272,12 @@ st.plotly_chart(fig_liquidity)
 st.info("Weeth Liquidity shows how much liquidity is available on each blockchain over time.")
 # Title of the Streamlit app
 # Title of the Streamlit app
+import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
+import requests  # For fetching data from CoinGecko API
+
+# Title of the Streamlit app
 st.title("Collateral Analysis and CSV Upload")
 
 # Function to get the current price of ETH from CoinGecko
@@ -311,27 +317,33 @@ if uploaded_collateral_file is not None:
     else:
         collateral_data['Value (ETH)'] = None
     
-    # Generate a pie chart for Total Collateral in Dollar
-    fig_collateral_usd = go.Figure(go.Pie(
-        labels=collateral_data['Label'],
-        values=collateral_data['Value'],
-        hole=0.3,
-        title="Total Collateral in Dollar"
-    ))
+    # Create two columns for displaying pie charts
+    col1, col2 = st.columns(2)
 
-    # Display the pie chart for Total Collateral in Dollar
-    st.plotly_chart(fig_collateral_usd)
+    # Generate a pie chart for Total Collateral in Dollar (USD)
+    with col1:
+        fig_collateral_usd = go.Figure(go.Pie(
+            labels=collateral_data['Label'],
+            values=collateral_data['Value'],
+            hole=0.3,
+            title="Total Collateral in Dollar",
+            textinfo="label+percent+value",  # Show label, percent and value
+            hoverinfo="label+value+percent"  # Show label, value, and percent on hover
+        ))
+        st.plotly_chart(fig_collateral_usd)
 
     # Generate a pie chart for Total Collateral in ETH
-    fig_collateral_eth = go.Figure(go.Pie(
-        labels=collateral_data['Label'],
-        values=collateral_data['Value (ETH)'],
-        hole=0.3,
-        title="Total Collateral in ETH"
-    ))
+    with col2:
+        fig_collateral_eth = go.Figure(go.Pie(
+            labels=collateral_data['Label'],
+            values=collateral_data['Value (ETH)'],
+            hole=0.3,
+            title="Total Collateral in ETH",
+            textinfo="label+percent+value",  # Show label, percent and value
+            hoverinfo="label+value+percent"  # Show label, value, and percent on hover
+        ))
+        st.plotly_chart(fig_collateral_eth)
 
-    # Display the pie chart for Total Collateral in ETH
-    st.plotly_chart(fig_collateral_eth)
 else:
     st.write("No file uploaded for Total Collateral. Please upload a CSV file.")
 
@@ -357,30 +369,34 @@ if uploaded_risk_file is not None:
     else:
         risk_data['Value (ETH)'] = None
 
-    # Generate a pie chart for Collateral at Risk in Dollar
-    fig_risk_usd = go.Figure(go.Pie(
-        labels=risk_data['Label'],
-        values=risk_data['Value'],
-        hole=0.3,
-        title="Collateral at Risk"
-    ))
+    # Create two columns for displaying pie charts for Collateral at Risk
+    col1, col2 = st.columns(2)
 
-    # Display the pie chart for Collateral at Risk in Dollar
-    st.plotly_chart(fig_risk_usd)
+    # Generate a pie chart for Collateral at Risk in Dollar (USD)
+    with col1:
+        fig_risk_usd = go.Figure(go.Pie(
+            labels=risk_data['Label'],
+            values=risk_data['Value'],
+            hole=0.3,
+            title="Collateral at Risk",
+            textinfo="label+percent+value",  # Show label, percent and value
+            hoverinfo="label+value+percent"  # Show label, value, and percent on hover
+        ))
+        st.plotly_chart(fig_risk_usd)
 
     # Generate a pie chart for Collateral at Risk in ETH
-    fig_risk_eth = go.Figure(go.Pie(
-        labels=risk_data['Label'],
-        values=risk_data['Value (ETH)'],
-        hole=0.3,
-        title="Collateral at Risk in ETH"
-    ))
-
-    # Display the pie chart for Collateral at Risk in ETH
-    st.plotly_chart(fig_risk_eth)
+    with col2:
+        fig_risk_eth = go.Figure(go.Pie(
+            labels=risk_data['Label'],
+            values=risk_data['Value (ETH)'],
+            hole=0.3,
+            title="Collateral at Risk in ETH",
+            textinfo="label+percent+value",  # Show label, percent and value
+            hoverinfo="label+value+percent"  # Show label, value, and percent on hover
+        ))
+        st.plotly_chart(fig_risk_eth)
 else:
     st.write("No file uploaded for Collateral at Risk. Please upload a CSV file.")
 
 # Step 5: Additional functionality (if needed)
 st.write("You can upload both CSV files and view their corresponding pie charts above.")
-
