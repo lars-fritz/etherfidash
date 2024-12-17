@@ -417,61 +417,64 @@ if uploaded_risk_file is not None:
 else:
     st.write("No file uploaded for Collateral at Risk. Please upload a CSV file.")
 
-# Step 5: Additional functionality (if needed)
-st.write("You can upload both CSV files and view their corresponding pie charts above.")
+# Summary Table Creation
+st.subheader("Blockchain Performance Summary")
 
-# Step 5: Create a summary table with the requested data
-if 'collateral_data' in st.session_state and 'risk_data' in st.session_state:
-    # Assuming the latest data is the last row for each blockchain in the dataset
-    latest_data = data.drop_duplicates('blockchain', keep='last')
+# Prepare summary data
+summary_rows = []
+
+for blockchain in selected_blockchains:
+    # Skip Ethereum in comparisons
+    if blockchain == "ethereum":
+        continue
     
-    # Prepare rows for the summary table
-    table_rows = []
+    # Extract latest data for the blockchain
+    blockchain_data = data[data["blockchain"] == blockchain]
+    
+    # Latest ETH rate
+    latest_eth_rate = blockchain_data["eth_rate"].dropna().iloc[-1] if not blockchain_data["eth_rate"].dropna().empty else None
+    
+    # Ethereum's latest ETH rate for comparison
+    ethereum_latest_rate = data[data["blockchain"] == "ethereum"]["eth_rate"].dropna().iloc[-1]
+    
+    # Relative ETH rate difference
+    relative_difference = (latest_eth_rate - ethereum_latest_rate) / ethereum_latest_rate if latest_eth_rate is not None else None
+    
+    # Find standard deviation from previous relative difference calculation
+    std_dev = None
+    if 'table_data' in locals():
+        for row in table_data:
+            if row['Blockchain'].lower() == blockchain:
+                std_dev = row['Standard Deviation']
+                break
+    
+    # Liquidity
+    liquidity = blockchain_data["weeth_liquidity"].dropna().iloc[-1] if not blockchain_data["weeth_liquidity"].dropna().empty else None
+    
+    # Collateral at Risk (if available in session state)
+    collateral_at_risk = None
+    collateral_at_risk_eth = None
+    if hasattr(st.session_state, 'risk_data'):
+        risk_row = st.session_state.risk_data[st.session_state.risk_data['Label'] == blockchain]
+        if not risk_row.empty:
+            collateral_at_risk = risk_row['Value'].values[0]
+            collateral_at_risk_eth = risk_row['Value (ETH)'].values[0]
+    
+    # Prepare row for summary
+    summary_row = {
+        'Blockchain': blockchain.capitalize(),
+        'Latest ETH Rate': round(latest_eth_rate, 6) if latest_eth_rate is not None else 'N/A',
+        'Relative ETH Rate Difference': round(relative_difference, 4) if relative_difference is not None else 'N/A',
+        'Std Dev of Relative Difference': round(std_dev, 4) if std_dev is not None else 'N/A',
+        'Weeth Liquidity': round(liquidity, 2) if liquidity is not None else 'N/A',
+        'Collateral at Risk (USD)': round(collateral_at_risk, 2) if collateral_at_risk is not None else 'N/A',
+        'Collateral at Risk (ETH)': round(collateral_at_risk_eth, 2) if collateral_at_risk_eth is not None else 'N/A'
+    }
+    
+    summary_rows.append(summary_row)
 
-    for blockchain in selected_blockchains:
-        latest_blockchain_data = latest_data[latest_data['blockchain'] == blockchain]
-        
-        if not latest_blockchain_data.empty:
-            eth_rate = latest_blockchain_data['eth_rate'].values[0]
-            liquidity = latest_blockchain_data['weeth_liquidity'].values[0]
-            
-            # ETH rate difference from Ethereum
-            ethereum_rate = latest_data[latest_data['blockchain'] == 'ethereum']['eth_rate'].values[0]
-            rate_diff = (eth_rate - ethereum_rate) / ethereum_rate if ethereum_rate != 0 else None
+# Create DataFrame from summary rows
+summary_df = pd.DataFrame(summary_rows)
 
-            # Find standard deviation of relative difference from your previous calculation
-            if blockchain in table_data:
-                std_diff = next(item['Standard Deviation'] for item in table_data if item['Blockchain'].lower() == blockchain)
-            else:
-                std_diff = None
-
-            # Collateral at Risk (if available)
-            collateral_risk = st.session_state.risk_data[st.session_state.risk_data['Label'] == blockchain]['Value'].values[0] if blockchain in st.session_state.risk_data['Label'].values else None
-
-            # Append to table rows
-            table_rows.append({
-                'Blockchain': blockchain.capitalize(),
-                'Latest ETH Rate': eth_rate,
-                'Difference from Ethereum': rate_diff,
-                'Std Dev of Difference': std_diff,
-                'Liquidity': liquidity,
-                'Collateral at Risk': collateral_risk
-            })
-
-    # Create DataFrame from rows
-    summary_table = pd.DataFrame(table_rows)
-
-    # Display the summary table
-    st.subheader("Summary Table")
-    st.dataframe(summary_table.style.format({
-        'Latest ETH Rate': '{:.6f}',
-        'Difference from Ethereum': '{:.6f}',
-        'Std Dev of Difference': '{:.6f}',
-        'Liquidity': '{:.2f}',
-        'Collateral at Risk': '{:.2f}'
-    }))
-else:
-    st.write("Please upload both CSV files to see the summary table.")
-
-# Footer Information
-st.info("**Note**: Values in the summary table are based on the latest available data. The collateral at risk is only shown if the CSV for collateral at risk was uploaded.")
+# Display the summary table
+st.table(summary_df)
