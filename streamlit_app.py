@@ -55,7 +55,7 @@ def process_blockchain(data, blockchain_name):
         return None, None, None, None, None
 
 # Streamlit App Title
-st.title("Interactive Blockchain ETH Rate and Weeth Liquidity Dashboard")
+st.title("Weeth Dashboard")
 
 # Dynamically fetch blockchain names
 blockchain_options = list(data["blockchain"].unique())
@@ -65,7 +65,7 @@ blockchain_options.insert(0, "All Blockchains")  # Add an "All Blockchains" opti
 selected_blockchains = st.multiselect(
     "Select Blockchains to Visualize",
     options=blockchain_options,
-    default=["scroll", "arbitrum", "ethereum"]
+    default=["scroll", "arbitrum", "ethereum","blast"]
 )
 
 # Adjust for "All Blockchains" selection
@@ -79,7 +79,7 @@ color_palette = [
 color_map = {blockchain: color_palette[i % len(color_palette)] for i, blockchain in enumerate(blockchain_options)}
 
 # ETH Rate Plot with Regression
-st.subheader("ETH Rates with Linear Regression")
+st.subheader("ETH Rates across blockchains and some statistics")
 fig_eth_rate = go.Figure()
 
 # Summary statistics dictionary
