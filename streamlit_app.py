@@ -209,12 +209,19 @@ def calculate_relative_difference(data, blockchain_name, ethereum_eth_rate, ethe
     blockchain_eth_rate = blockchain_eth_rate.dropna(subset=["relative_difference"])
     return blockchain_eth_rate
 
-# Blockchains to compare
-relative_diff_colors = ["red", "blue", "green", "purple", "orange", "pink"]
-relative_blockchains = ['scroll', 'arbitrum', 'blast', 'bnb', 'base', 'linea']
+# List of blockchains to process: show only selected ones
+relative_blockchains = selected_blockchains
 
-# Plot relative differences for each blockchain
-for idx, blockchain in enumerate(relative_blockchains):
+# Default colors for blockchains
+relative_diff_colors = {
+    'scroll': 'red', 'arbitrum': 'blue', 'blast': 'green', 'bnb': 'purple',
+    'base': 'orange', 'linea': 'pink', 'optimism': 'teal'
+}
+
+# Plot relative differences for each selected blockchain
+for blockchain in relative_blockchains:
+    if blockchain == "ethereum":
+        continue  # Skip Ethereum itself
     blockchain_relative = calculate_relative_difference(data, blockchain, ethereum_eth_rate, ethereum_days)
     if not blockchain_relative.empty:
         fig_relative_diff.add_trace(go.Scatter(
@@ -222,7 +229,7 @@ for idx, blockchain in enumerate(relative_blockchains):
             y=blockchain_relative["relative_difference"],
             mode='lines+markers',
             name=f"{blockchain.capitalize()} Relative ETH Rate Difference",
-            line=dict(color=relative_diff_colors[idx]),
+            line=dict(color=relative_diff_colors.get(blockchain, "gray")),  # Default to gray if no color
             marker=dict(size=4)  # Smaller marker size
         ))
 
