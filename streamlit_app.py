@@ -281,19 +281,40 @@ import requests  # For fetching data from CoinGecko API
 # Title of the Streamlit app
 st.title("Collateral Analysis and CSV Upload")
 
-# Function to get the current price of ETH from CoinGecko
 def get_eth_price():
-    url = "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
-    response = requests.get(url)
-    data = response.json()
-    return data['ethereum']['usd']
+    try:
+        url = "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
+        response = requests.get(url)
+        
+        # Check if the request was successful
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Explicitly check for 'ethereum' key
+            if 'ethereum' in data and 'usd' in data['ethereum']:
+                return data['ethereum']['usd']
+            else:
+                st.error("Unexpected response format from CoinGecko API")
+                return None
+        else:
+            st.error(f"Failed to fetch ETH price. Status code: {response.status_code}")
+            return None
+    
+    except requests.RequestException as e:
+        st.error(f"Network error fetching ETH price: {e}")
+        return None
+    except Exception as e:
+        st.error(f"Unexpected error fetching ETH price: {e}")
+        return None
 
 # Fetch the current ETH price
-try:
-    eth_price = get_eth_price()
+eth_price = get_eth_price()
+
+# Handle ETH price fetching
+if eth_price is not None:
     st.write(f"The current price of Ethereum (ETH) is: ${eth_price} USD")
-except Exception as e:
-    st.error(f"Error fetching ETH price: {e}")
+else:
+    st.warning("Could not fetch the current ETH price. Using default value of 0.")
     eth_price = 0
 
 # Mapping to normalize the labels
