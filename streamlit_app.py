@@ -306,17 +306,19 @@ if uploaded_collateral_file is not None:
     
     # Display the first few rows of the uploaded data for user verification
     st.write("Preview of the Total Collateral in Dollar Data:")
-    st.write(collateral_data.head())
 
-    # Store the collateral data in session state for later use
-    st.session_state.collateral_data = collateral_data
-
-    # Convert collateral values to ETH
+    # Convert collateral values to ETH if ETH price is available
     if eth_price > 0:
         collateral_data['Value (ETH)'] = collateral_data['Value'] / eth_price
     else:
         collateral_data['Value (ETH)'] = None
-    
+
+    # Show the preview table with the ETH column
+    st.write(collateral_data[['Label', 'Value', 'Value (ETH)']])
+
+    # Store the collateral data in session state for later use
+    st.session_state.collateral_data = collateral_data
+
     # Create two columns for displaying pie charts
     col1, col2 = st.columns(2)
 
@@ -358,16 +360,18 @@ if uploaded_risk_file is not None:
     
     # Display the first few rows of the uploaded data for user verification
     st.write("Preview of the Collateral at Risk Data:")
-    st.write(risk_data.head())
 
-    # Store the collateral risk data in session state for later use
-    st.session_state.risk_data = risk_data
-
-    # Convert collateral risk values to ETH
+    # Convert collateral risk values to ETH if ETH price is available
     if eth_price > 0:
         risk_data['Value (ETH)'] = risk_data['Value'] / eth_price
     else:
         risk_data['Value (ETH)'] = None
+
+    # Show the preview table with the ETH column
+    st.write(risk_data[['Label', 'Value', 'Value (ETH)']])
+
+    # Store the collateral risk data in session state for later use
+    st.session_state.risk_data = risk_data
 
     # Create two columns for displaying pie charts for Collateral at Risk
     col1, col2 = st.columns(2)
