@@ -281,10 +281,17 @@ import requests  # For fetching data from CoinGecko API
 # Title of the Streamlit app
 st.title("Collateral Analysis and CSV Upload")
 
+# Function to get the current price of ETH from CoinGecko
 def get_eth_price():
     try:
         url = "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
-        response = requests.get(url)
+        
+        # Add headers to mimic a browser request
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
+        response = requests.get(url, headers=headers, timeout=10)
         
         # Check if the request was successful
         if response.status_code == 200:
@@ -296,6 +303,9 @@ def get_eth_price():
             else:
                 st.error("Unexpected response format from CoinGecko API")
                 return None
+        elif response.status_code == 429:
+            st.warning("Rate limit exceeded. Using a fallback method.")
+            return None
         else:
             st.error(f"Failed to fetch ETH price. Status code: {response.status_code}")
             return None
@@ -307,8 +317,36 @@ def get_eth_price():
         st.error(f"Unexpected error fetching ETH price: {e}")
         return None
 
+# Fallback method to get ETH price
+def get_eth_price_fallback():
+    # You can add multiple fallback sources here
+    fallback_sources = [
+        "https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT",
+        # Add more API endpoints as needed
+    ]
+    
+    for source in fallback_sources:
+        try:
+            response = requests.get(source, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Handle different API response formats
+                if source == "https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT":
+                    return float(data['price'])
+                
+                # Add more source-specific parsing as needed
+        except Exception as e:
+            st.error(f"Error fetching from {source}: {e}")
+    
+    return None
+
 # Fetch the current ETH price
 eth_price = get_eth_price()
+
+# Fallback to alternative method if primary method fails
+if eth_price is None:
+    eth_price = get_eth_price_fallback()
 
 # Handle ETH price fetching
 if eth_price is not None:
