@@ -267,6 +267,47 @@ st.plotly_chart(fig_liquidity)
 
 # Footer
 st.info("Weeth Liquidity shows how much liquidity is available on each blockchain over time.")
+
+
+st.subheader("Liquidity Across Blockchains")
+fig_liquidity = go.Figure()
+
+# Process liquidity data
+liquidity_data = {}
+
+for blockchain in selected_blockchains:
+    blockchain_data = data[data["blockchain"] == blockchain]
+    blockchain_liquidity = blockchain_data[["day", "liquidity_eth"]].dropna()
+
+    blockchain_liquidity["liquidity_eth"] = pd.to_numeric(blockchain_liquidity["liquidity_eth"], errors='coerce')
+    blockchain_liquidity["day"] = pd.to_datetime(blockchain_liquidity["day"], errors='coerce')
+    blockchain_liquidity = blockchain_liquidity.sort_values(by="day").reset_index(drop=True)
+
+    if not blockchain_liquidity.empty:
+        fig_liquidity.add_trace(go.Scatter(
+            x=blockchain_liquidity["day"],
+            y=blockchain_liquidity["liquidity_eth"],
+            mode='markers',
+            marker=dict(size=4, color=color_map[blockchain]),  # Reduced dot size here
+            name=f"{blockchain} Liquidity (ETH)"
+        ))
+
+# Layout for Liquidity in ETH
+fig_liquidity.update_layout(
+    title="Liquidity (ETH) for Selected Blockchains Over Time",
+    xaxis_title="Day",
+    yaxis_title="Liquidity (ETH)",
+    legend=dict(yanchor="top", y=0.9, xanchor="left", x=1.02),
+    template="plotly_white"
+)
+st.plotly_chart(fig_liquidity)
+
+# Footer
+st.info("Liquidity (ETH) shows how much liquidity is available on each blockchain over time.")
+
+
+
+
 # Title of the Streamlit app
 # Title of the Streamlit app
 import streamlit as st
