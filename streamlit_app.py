@@ -138,18 +138,18 @@ st.dataframe(summary_df.style.format({"Slope (ETH Rate Change)": "{:.6f}", "Std 
 st.info("The regression line represents the trend of ETH rates over time whereas the standard deviation is a measure for the volatility on the same time window (although it is unclear how to extend volatility to pegged tokens)")
 
 ### Relative ETH Rate Difference Plot ###
-st.subheader("Relative Deviation from Ethereum")
+st.subheader("Relative Deviation from Z-All")
 
 # Initialize a new interactive plot
 fig_relative_diff = go.Figure()
 
-# Preprocess Ethereum baseline data
-ethereum_data = data[data["blockchain"] == "ethereum"]
-ethereum_days = pd.to_datetime(ethereum_data["day"].dropna()).tolist()
-ethereum_eth_rate = pd.to_numeric(ethereum_data["eth_rate"].dropna(), errors='coerce').tolist()
+# Preprocess Z-All baseline data
+zall_data = data[data["blockchain"] == "Z-All"]
+zall_days = pd.to_datetime(zall_data["day"].dropna()).tolist()
+zall_eth_rate = pd.to_numeric(zall_data["eth_rate"].dropna(), errors='coerce').tolist()
 
 # Function to calculate relative ETH rate difference
-def calculate_relative_difference(data, blockchain_name, ethereum_eth_rate, ethereum_days):
+def calculate_relative_difference(data, blockchain_name, zall_eth_rate, zall_days):
     blockchain_data = data[data["blockchain"] == blockchain_name]
     blockchain_eth_rate = blockchain_data[["day", "eth_rate"]].dropna()
     blockchain_eth_rate["eth_rate"] = pd.to_numeric(blockchain_eth_rate["eth_rate"], errors='coerce')
@@ -158,11 +158,11 @@ def calculate_relative_difference(data, blockchain_name, ethereum_eth_rate, ethe
 
     relative_difference = []
     for i, day in enumerate(blockchain_eth_rate["day"]):
-        if day in ethereum_days:
-            idx = ethereum_days.index(day)
-            eth_rate_eth = ethereum_eth_rate[idx]
-            if eth_rate_eth != 0:  # Avoid division by zero
-                diff = (blockchain_eth_rate["eth_rate"].iloc[i] - eth_rate_eth) / eth_rate_eth
+        if day in zall_days:
+            idx = zall_days.index(day)
+            eth_rate_zall = zall_eth_rate[idx]
+            if eth_rate_zall != 0:  # Avoid division by zero
+                diff = (blockchain_eth_rate["eth_rate"].iloc[i] - eth_rate_zall) / eth_rate_zall
                 relative_difference.append(diff)
             else:
                 relative_difference.append(None)
@@ -174,12 +174,12 @@ def calculate_relative_difference(data, blockchain_name, ethereum_eth_rate, ethe
     return blockchain_eth_rate
 
 # List of blockchains to process: show only selected ones
-relative_blockchains = selected_blockchains
+relative_blockchains = [b for b in selected_blockchains if b != "Z-All"]
 
 # Default colors for blockchains
 relative_diff_colors = {
     'scroll': 'red', 'arbitrum': 'blue', 'blast': 'green', 'bnb': 'purple',
-    'base': 'orange', 'linea': 'pink', 'optimism': 'teal'
+    'base': 'orange', 'linea': 'pink', 'optimism': 'teal', 'ethereum': 'gray'
 }
 
 # Table data for averages and standard deviations
@@ -187,9 +187,7 @@ table_data = []
 
 # Plot relative differences for each selected blockchain
 for blockchain in relative_blockchains:
-    if blockchain == "ethereum":
-        continue  # Skip Ethereum itself
-    blockchain_relative = calculate_relative_difference(data, blockchain, ethereum_eth_rate, ethereum_days)
+    blockchain_relative = calculate_relative_difference(data, blockchain, zall_eth_rate, zall_days)
     if not blockchain_relative.empty:
         # Add plot for each blockchain's relative difference
         fig_relative_diff.add_trace(go.Scatter(
@@ -214,7 +212,7 @@ for blockchain in relative_blockchains:
 
 # Update layout for the plot
 fig_relative_diff.update_layout(
-    title="Relative ETH Rate Difference Compared to Ethereum",
+    title="Relative ETH Rate Difference Compared to Z-All",
     xaxis_title="Day",
     yaxis_title="Relative Difference",
     legend=dict(yanchor="top", y=0.9, xanchor="left", x=1.02),
@@ -232,8 +230,7 @@ table_df = pd.DataFrame(table_data)
 st.table(table_df)
 
 # Footer Information
-st.info("eETH can only be minted directly on ethereum, linea, base, and blast. Blast seems to have relatively high fluctuations compared to the other chains. ")
-
+st.info("Relative differences are now calculated using Z-All as the baseline for comparison.")
 
 st.subheader("Weeth Liquidity Across Blockchains")
 fig_liquidity = go.Figure()
