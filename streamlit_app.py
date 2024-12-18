@@ -564,7 +564,7 @@ for blockchain in selected_blockchains:
     blockchain_data['day'] = pd.to_datetime(blockchain_data['day'])
     latest_data = blockchain_data.loc[blockchain_data['day'] == blockchain_data['day'].max()]
     
-    eth_liquidity_data = latest_data["eth_liquidity"].dropna()
+    eth_liquidity_data = latest_data["liquidity_eth"].dropna()
     weeth_liquidity_data = latest_data["weeth_liquidity"].dropna()
     
     eth_liquidity = float(eth_liquidity_data.iloc[0]) if not eth_liquidity_data.empty else None
