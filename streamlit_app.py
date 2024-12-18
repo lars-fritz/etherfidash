@@ -517,42 +517,44 @@ else:
 # Prepare summary data
 summary_rows = []
 
-# Safely extract Ethereum's latest date and rate
-def safe_get_latest_data(data, blockchain):
+# Safely extract Ethereum's latest rate
+def safe_get_latest_rate(data, blockchain):
     blockchain_data = data[data["blockchain"] == blockchain]
     blockchain_data['day'] = pd.to_datetime(blockchain_data['day'])
     latest_data = blockchain_data.loc[blockchain_data['day'] == blockchain_data['day'].max()]
-    
-    latest_date = latest_data['day'].max() if not latest_data['day'].empty else None
     eth_rates = latest_data["eth_rate"].dropna()
-    latest_rate = float(eth_rates.iloc[0]) if not eth_rates.empty else None
-    
-    return latest_date, latest_rate
+    return float(eth_rates.iloc[0]) if not eth_rates.empty else None
 
-# Get Ethereum's latest date and rate
-ethereum_latest_date, ethereum_latest_rate = safe_get_latest_data(data, "ethereum")
+# Safely calculate relative difference
+def safe_calculate_relative_difference(latest_rate, baseline_rate):
+    if latest_rate is not None and baseline_rate is not None and baseline_rate != 0:
+        try:
+            return (latest_rate - baseline_rate) / baseline_rate
+        except (TypeError, ZeroDivisionError):
+            return None
+    return None
 
-# Precompute relative differences and standard deviations
-relative_differences = {}
-std_deviations = {}
-
-# Check if table_data exists from previous calculations
-if 'table_data' in locals():
-    for row in table_data:
-        blockchain = row['Blockchain'].lower()
-        std_deviations[blockchain] = row.get('Standard Deviation')
+# Get Ethereum's latest rate
+ethereum_latest_rate = safe_get_latest_rate(data, "ethereum")
 
 for blockchain in selected_blockchains:
     # Skip Ethereum in comparisons
     if blockchain == "ethereum":
         continue
     
-    # Get latest date and ETH rate for the blockchain
-    latest_date, latest_eth_rate = safe_get_latest_data(data, blockchain)
+    # Get latest ETH rate for the blockchain
+    latest_eth_rate = safe_get_latest_rate(data, blockchain)
     
     # Calculate relative difference
     relative_difference = safe_calculate_relative_difference(latest_eth_rate, ethereum_latest_rate)
-    relative_differences[blockchain] = relative_difference
+    
+    # Find standard deviation from previous relative difference calculation
+    std_dev = None
+    if 'table_data' in locals():
+        for row in table_data:
+            if row['Blockchain'].lower() == blockchain:
+                std_dev = row['Standard Deviation']
+                break
     
     # Liquidity (eth_liquidity and weeth_liquidity)
     blockchain_data = data[data["blockchain"] == blockchain]
@@ -583,10 +585,9 @@ for blockchain in selected_blockchains:
     # Prepare row for summary
     summary_row = {
         'Blockchain': blockchain.capitalize(),
-        'Latest Date': latest_date.strftime('%Y-%m-%d') if latest_date is not None else 'N/A',
         'Latest ETH Rate': round(latest_eth_rate, 6) if latest_eth_rate is not None else 'N/A',
         'Relative ETH Rate Difference': round(relative_difference, 4) if relative_difference is not None else 'N/A',
-        'Std Dev of Relative Difference': round(std_deviations.get(blockchain.lower()), 4) if std_deviations.get(blockchain.lower()) is not None else 'N/A',
+        'Std Dev of Relative Difference': round(std_dev, 4) if std_dev is not None else 'N/A',
         'ETH Liquidity': round(eth_liquidity, 2) if eth_liquidity is not None else 'N/A',
         'Weeth Liquidity': round(weeth_liquidity, 2) if weeth_liquidity is not None else 'N/A',
         'Collateral at Risk (ETH)': round(collateral_at_risk_eth, 2) if collateral_at_risk_eth is not None else 'N/A',
@@ -598,10 +599,6 @@ for blockchain in selected_blockchains:
 
 # Create DataFrame from summary rows
 summary_df = pd.DataFrame(summary_rows)
-
-# Reorder columns to put Latest Date right after Blockchain
-columns_order = ['Blockchain', 'Latest Date'] + [col for col in summary_df.columns if col not in ['Blockchain', 'Latest Date']]
-summary_df = summary_df[columns_order]
 
 # Display the summary table
 st.table(summary_df)
