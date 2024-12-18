@@ -497,6 +497,11 @@ for blockchain in selected_blockchains:
         if not risk_row.empty:
             collateral_at_risk_eth = float(risk_row['Value (ETH)'].values[0])
     
+    # Calculate Collateral at Risk / Liquidity Ratio
+    risk_liquidity_ratio = None
+    if collateral_at_risk_eth is not None and liquidity is not None and liquidity != 0:
+        risk_liquidity_ratio = collateral_at_risk_eth / liquidity
+    
     # Determine if minting is possible
     can_mint = 'Yes' if blockchain in ['ethereum', 'blast', 'base', 'linea'] else 'No'
     
@@ -508,6 +513,7 @@ for blockchain in selected_blockchains:
         'Std Dev of Relative Difference': round(std_dev, 4) if std_dev is not None else 'N/A',
         'Weeth Liquidity': round(liquidity, 2) if liquidity is not None else 'N/A',
         'Collateral at Risk (ETH)': round(collateral_at_risk_eth, 2) if collateral_at_risk_eth is not None else 'N/A',
+        'Collateral/Liquidity Ratio': round(risk_liquidity_ratio, 4) if risk_liquidity_ratio is not None else 'N/A',
         'Can Mint': can_mint
     }
     
