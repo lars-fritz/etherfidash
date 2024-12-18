@@ -514,8 +514,8 @@ if uploaded_risk_file is not None:
 else:
     st.write("No file uploaded for Collateral at Risk. Please upload a CSV file.")
 
-# Add eth_liquidity column to data (assuming it's identical to weeth_liquidity for now)
-data["eth_liquidity"] = data["weeth_liquidity"]  # Duplicate weeth_liquidity to eth_liquidity
+# Prepare summary data
+summary_rows = []
 
 # Safely extract Ethereum's latest date and rate
 def safe_get_latest_data(data, blockchain):
@@ -532,6 +532,16 @@ def safe_get_latest_data(data, blockchain):
 # Get Ethereum's latest date and rate
 ethereum_latest_date, ethereum_latest_rate = safe_get_latest_data(data, "ethereum")
 
+# Precompute relative differences and standard deviations
+relative_differences = {}
+std_deviations = {}
+
+# Check if table_data exists from previous calculations
+if 'table_data' in locals():
+    for row in table_data:
+        blockchain = row['Blockchain'].lower()
+        std_deviations[blockchain] = row.get('Standard Deviation')
+
 for blockchain in selected_blockchains:
     # Skip Ethereum in comparisons
     if blockchain == "ethereum":
@@ -542,14 +552,7 @@ for blockchain in selected_blockchains:
     
     # Calculate relative difference
     relative_difference = safe_calculate_relative_difference(latest_eth_rate, ethereum_latest_rate)
-    
-    # Find standard deviation from previous relative difference calculation
-    std_dev = None
-    if 'table_data' in locals():
-        for row in table_data:
-            if row['Blockchain'].lower() == blockchain:
-                std_dev = row['Standard Deviation']
-                break
+    relative_differences[blockchain] = relative_difference
     
     # Liquidity (eth_liquidity and weeth_liquidity)
     blockchain_data = data[data["blockchain"] == blockchain]
@@ -583,7 +586,7 @@ for blockchain in selected_blockchains:
         'Latest Date': latest_date.strftime('%Y-%m-%d') if latest_date is not None else 'N/A',
         'Latest ETH Rate': round(latest_eth_rate, 6) if latest_eth_rate is not None else 'N/A',
         'Relative ETH Rate Difference': round(relative_difference, 4) if relative_difference is not None else 'N/A',
-        'Std Dev of Relative Difference': round(std_dev, 4) if std_dev is not None else 'N/A',
+        'Std Dev of Relative Difference': round(std_deviations.get(blockchain.lower()), 4) if std_deviations.get(blockchain.lower()) is not None else 'N/A',
         'ETH Liquidity': round(eth_liquidity, 2) if eth_liquidity is not None else 'N/A',
         'Weeth Liquidity': round(weeth_liquidity, 2) if weeth_liquidity is not None else 'N/A',
         'Collateral at Risk (ETH)': round(collateral_at_risk_eth, 2) if collateral_at_risk_eth is not None else 'N/A',
