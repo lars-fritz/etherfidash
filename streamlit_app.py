@@ -517,9 +517,6 @@ else:
 # Add eth_liquidity column to data (assuming it's identical to weeth_liquidity for now)
 data["eth_liquidity"] = data["weeth_liquidity"]  # Duplicate weeth_liquidity to eth_liquidity
 
-# Summary Table Creation
-st.subheader("Blockchain Performance Summary")
-
 # Prepare summary data
 summary_rows = []
 
@@ -562,12 +559,16 @@ for blockchain in selected_blockchains:
                 std_dev = row['Standard Deviation']
                 break
     
-    # Liquidity (using eth_liquidity now)
+    # Liquidity (eth_liquidity and weeth_liquidity)
     blockchain_data = data[data["blockchain"] == blockchain]
     blockchain_data['day'] = pd.to_datetime(blockchain_data['day'])
     latest_data = blockchain_data.loc[blockchain_data['day'] == blockchain_data['day'].max()]
-    liquidity_data = latest_data["eth_liquidity"].dropna()
-    liquidity = float(liquidity_data.iloc[0]) if not liquidity_data.empty else None
+    
+    eth_liquidity_data = latest_data["eth_liquidity"].dropna()
+    weeth_liquidity_data = latest_data["weeth_liquidity"].dropna()
+    
+    eth_liquidity = float(eth_liquidity_data.iloc[0]) if not eth_liquidity_data.empty else None
+    weeth_liquidity = float(weeth_liquidity_data.iloc[0]) if not weeth_liquidity_data.empty else None
     
     # Collateral at Risk (if available in session state)
     collateral_at_risk_eth = None
@@ -578,8 +579,8 @@ for blockchain in selected_blockchains:
     
     # Calculate Collateral at Risk / Liquidity Ratio
     risk_liquidity_ratio = None
-    if collateral_at_risk_eth is not None and liquidity is not None and liquidity != 0:
-        risk_liquidity_ratio = liquidity / collateral_at_risk_eth
+    if collateral_at_risk_eth is not None and eth_liquidity is not None and eth_liquidity != 0:
+        risk_liquidity_ratio = eth_liquidity / collateral_at_risk_eth
     
     # Determine if minting is possible
     can_mint = 'Yes' if blockchain in ['ethereum', 'blast', 'base', 'linea'] else 'No'
@@ -590,7 +591,8 @@ for blockchain in selected_blockchains:
         'Latest ETH Rate': round(latest_eth_rate, 6) if latest_eth_rate is not None else 'N/A',
         'Relative ETH Rate Difference': round(relative_difference, 4) if relative_difference is not None else 'N/A',
         'Std Dev of Relative Difference': round(std_dev, 4) if std_dev is not None else 'N/A',
-        'ETH Liquidity': round(liquidity, 2) if liquidity is not None else 'N/A',
+        'ETH Liquidity': round(eth_liquidity, 2) if eth_liquidity is not None else 'N/A',
+        'Weeth Liquidity': round(weeth_liquidity, 2) if weeth_liquidity is not None else 'N/A',
         'Collateral at Risk (ETH)': round(collateral_at_risk_eth, 2) if collateral_at_risk_eth is not None else 'N/A',
         'Liquidity/CollateralAtRisk': round(risk_liquidity_ratio, 4) if risk_liquidity_ratio is not None else 'N/A',
         'Can Mint': can_mint
@@ -604,3 +606,4 @@ summary_df = pd.DataFrame(summary_rows)
 # Display the summary table
 st.table(summary_df)
 st.info("Everything is calculated relative to Z-All now which is not the same as the minting rate. We might want to use that instead.")
+
