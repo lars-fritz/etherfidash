@@ -230,7 +230,7 @@ table_df = pd.DataFrame(table_data)
 st.table(table_df)
 
 # Footer Information
-st.info("Relative differences are now calculated using Z-All as the baseline for comparison.")
+st.info("Relative differences are now calculated using Z-All as the baseline for comparison. It is important to note that weETH can be staked/minted on ethereum, linea, blast, and base. Curiously, they do not seem to agree in value across the three chains for 1 ETH staked. ")
 
 st.subheader("Weeth Liquidity Across Blockchains")
 fig_liquidity = go.Figure()
@@ -559,5 +559,5 @@ summary_df = pd.DataFrame(summary_rows)
 
 # Display the summary table
 st.table(summary_df)
-st.info("I still need to include ethereum. At the moment it is just kept as reference point for the peg but I need an independent value for that such that I can characterize the state of ethereum. ")
+st.info("Everything is calculated relative to Z-All now which is not the same as the minting rate. We might want to use that instead. ")
 
