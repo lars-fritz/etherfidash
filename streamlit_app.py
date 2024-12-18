@@ -562,3 +562,5 @@ summary_df = pd.DataFrame(summary_rows)
 
 # Display the summary table
 st.table(summary_df)
+st.info("I still need to include ethereum. At the moment it is just kept as reference point for the peg but I need an independent value for that such that I can characterize the state of ethereum. ")
+
