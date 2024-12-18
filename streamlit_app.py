@@ -391,7 +391,7 @@ if eth_price is not None:
     st.write(f"The current price of Ethereum (ETH) is: ${eth_price} USD")
 else:
     st.warning("Could not fetch the current ETH price. Using default value of 0.")
-    eth_price = 0
+    eth_price = 3500
 
 # Mapping to normalize the labels
 label_mapping = {
