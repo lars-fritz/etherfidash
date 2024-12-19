@@ -66,7 +66,7 @@ blockchain_options.insert(0, "All Blockchains")  # Add an "All Blockchains" opti
 selected_blockchains = st.multiselect(
     "Select Blockchains to Visualize",
     options=blockchain_options,
-    default=["scroll", "arbitrum", "ethereum","blast"]
+    default=["scroll", "arbitrum", "ethereum","blast","linea","bnb","base","optimism"]
 )
 
 # Adjust for "All Blockchains" selection
