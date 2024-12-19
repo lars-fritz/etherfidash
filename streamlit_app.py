@@ -700,13 +700,62 @@ st.table(reduced_data)
 # Prepare summary data
 summary_rows = []
 
-# Safely extract Ethereum's latest rate
 def safe_get_latest_rate(data, blockchain):
-    blockchain_data = data[data["blockchain"] == blockchain]
-    blockchain_data['day'] = pd.to_datetime(blockchain_data['day'])
-    latest_data = blockchain_data.loc[blockchain_data['day'] == blockchain_data['day'].max()]
-    eth_rates = latest_data["eth_rate"].dropna()
-    return float(eth_rates.iloc[0]) if not eth_rates.empty else None
+    """
+    Safely extract the latest rate for a given blockchain with extensive error handling.
+    
+    Args:
+        data (pd.DataFrame): The input DataFrame containing blockchain data
+        blockchain (str): The name of the blockchain to get rate for
+        
+    Returns:
+        float or None: The latest rate for the blockchain, or None if unavailable
+    """
+    try:
+        # Filter for the specific blockchain
+        blockchain_data = data[data["blockchain"] == blockchain].copy()
+        
+        if blockchain_data.empty:
+            print(f"No data found for blockchain: {blockchain}")
+            return None
+            
+        # Convert day column to datetime if it exists
+        if "day" in blockchain_data.columns:
+            blockchain_data['day'] = pd.to_datetime(blockchain_data['day'], errors='coerce')
+            
+            # Remove rows with invalid dates
+            blockchain_data = blockchain_data.dropna(subset=['day'])
+            
+            if blockchain_data.empty:
+                print(f"No valid dates found for blockchain: {blockchain}")
+                return None
+                
+            # Get the latest date
+            latest_date = blockchain_data['day'].max()
+            latest_data = blockchain_data[blockchain_data['day'] == latest_date]
+        else:
+            print(f"No 'day' column found for blockchain: {blockchain}")
+            return None
+            
+        # Extract eth_rate values
+        if "eth_rate" not in latest_data.columns:
+            print(f"No 'eth_rate' column found for blockchain: {blockchain}")
+            return None
+            
+        # Convert eth_rate to numeric, handling any non-numeric values
+        latest_data['eth_rate'] = pd.to_numeric(latest_data['eth_rate'], errors='coerce')
+        eth_rates = latest_data['eth_rate'].dropna()
+        
+        if eth_rates.empty:
+            print(f"No valid eth_rate values found for blockchain: {blockchain}")
+            return None
+            
+        # Return the first valid rate
+        return float(eth_rates.iloc[0])
+        
+    except Exception as e:
+        print(f"Error processing {blockchain}: {str(e)}")
+        return None
 
 # Safely calculate relative difference
 def safe_calculate_relative_difference(latest_rate, baseline_rate):
