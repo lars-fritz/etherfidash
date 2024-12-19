@@ -50,9 +50,6 @@ reduced_data["relative_deviation"] = (
     (reduced_data["eth_rate"] - reference_eth_rate) / reference_eth_rate
 )
 
-# Display the updated dataset
-st.write("Reduced Dataset with Relative Deviation:")
-st.table(reduced_data)
 
 
 # Function to process blockchain data and calculate linear regression
