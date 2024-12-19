@@ -358,31 +358,76 @@ st.plotly_chart(fig_liquidity)
 # Footer
 st.info("Liquidity (ETH) shows how much liquidity is available on each blockchain over time.")
 
-# Step 1: Calculate daily eth_price_day
-eth_price_day = {}
-
-for day in data["day"].unique():
-    daily_data = data[data["day"] == day]
-    z_all_row = daily_data[daily_data["blockchain"] == "Z-All"]
+# Step 1: Calculate daily eth_price_day more robustly
+def calculate_eth_price_day(data):
+    eth_price_day = {}
     
-    if not z_all_row.empty:
-        liquidity_usd = z_all_row["liquidity_usd"].values[0]
-        liquidity_eth = z_all_row["liquidity_eth"].values[0]
+    for day in data["day"].unique():
+        daily_data = data[data["day"] == day]
+        z_all_row = daily_data[daily_data["blockchain"] == "Z-All"]
         
-        if liquidity_eth > 0:
-            eth_price_day[day] = liquidity_usd / liquidity_eth
+        if not z_all_row.empty:
+            # Convert to numeric and handle NaN values
+            liquidity_usd = pd.to_numeric(z_all_row["liquidity_usd"].iloc[0], errors='coerce')
+            liquidity_eth = pd.to_numeric(z_all_row["liquidity_eth"].iloc[0], errors='coerce')
+            
+            # Only calculate price if both values are valid and liquidity_eth is positive
+            if pd.notna(liquidity_usd) and pd.notna(liquidity_eth) and liquidity_eth > 0:
+                eth_price_day[day] = liquidity_usd / liquidity_eth
+            else:
+                eth_price_day[day] = None
         else:
             eth_price_day[day] = None
-    else:
-        eth_price_day[day] = None
+    
+    return eth_price_day
 
-# Step 2: Calculate volume in ETH for each blockchain
-data["eth_price_day"] = data["day"].map(eth_price_day)
-data["volume_eth"] = data["volume"] / data["eth_price_day"]
+# Step 2: Calculate volume in ETH safely
+def calculate_volume_eth(data):
+    # Make a copy to avoid modifying the original dataframe
+    df = data.copy()
+    
+    # Calculate ETH prices for each day
+    eth_price_day = calculate_eth_price_day(df)
+    
+    # Convert eth_price_day dictionary to a series mapped to the day column
+    df["eth_price_day"] = df["day"].map(eth_price_day)
+    
+    # Convert volume to numeric, replacing invalid values with NaN
+    df["volume"] = pd.to_numeric(df["volume"], errors='coerce')
+    
+    # Calculate volume_eth only where we have valid values
+    df["volume_eth"] = df.apply(
+        lambda row: row["volume"] / row["eth_price_day"] 
+        if pd.notna(row["volume"]) and pd.notna(row["eth_price_day"]) and row["eth_price_day"] != 0 
+        else None,
+        axis=1
+    )
+    
+    # Step 3: Calculate liquidity-to-volume ratio
+    df["liquidity_adjusted"] = df.apply(
+        lambda row: (
+            pd.to_numeric(row["liquidity_eth"], errors='coerce') +
+            (pd.to_numeric(row["weeth_liquidity"], errors='coerce') * 
+             pd.to_numeric(row["eth_rate"], errors='coerce'))
+        ),
+        axis=1
+    )
+    
+    df["liquidity_to_volume_ratio"] = df.apply(
+        lambda row: (
+            row["liquidity_adjusted"] / row["volume_eth"]
+            if pd.notna(row["liquidity_adjusted"]) and 
+               pd.notna(row["volume_eth"]) and 
+               row["volume_eth"] != 0
+            else None
+        ),
+        axis=1
+    )
+    
+    return df
 
-# Step 3: Compute liquidity-to-volume ratio
-data["liquidity_adjusted"] = data["liquidity_eth"] + (data["weeth_liquidity"] * data["eth_rate"])
-data["liquidity_to_volume_ratio"] = data["liquidity_adjusted"] / data["volume_eth"]
+# Apply the calculations
+data = calculate_volume_eth(data)
 
 # Step 4: Create the plot
 st.subheader("Liquidity-to-Volume Ratio Across Blockchains")
