@@ -32,8 +32,15 @@ reduced_data = (
     .drop(columns=columns_to_remove, errors="ignore")  # Drop specified columns
 )
 
-# Display the reduced dataset
-st.write("Reduced Dataset:")
+reference_eth_rate = reduced_data.iloc[0]["eth_rate"]
+
+# Add the relative_deviation column
+reduced_data["relative_deviation"] = (
+    (reduced_data["eth_rate"] - reference_eth_rate) / reference_eth_rate
+)
+
+# Display the updated dataset
+st.write("Reduced Dataset with Relative Deviation:")
 st.table(reduced_data)
 
 # Function to process blockchain data and calculate linear regression
