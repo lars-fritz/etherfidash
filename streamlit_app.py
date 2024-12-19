@@ -32,7 +32,18 @@ reduced_data = (
     .drop(columns=columns_to_remove, errors="ignore")  # Drop specified columns
 )
 
+# Convert eth_rate column to numeric (coerce non-numeric values to NaN)
+reduced_data["eth_rate"] = pd.to_numeric(reduced_data["eth_rate"], errors="coerce")
+
+# Drop rows where eth_rate is NaN (if necessary)
+reduced_data = reduced_data.dropna(subset=["eth_rate"])
+
+# Get the reference_eth_rate from row 0
 reference_eth_rate = reduced_data.iloc[0]["eth_rate"]
+
+# Ensure reference_eth_rate is numeric
+if pd.isna(reference_eth_rate):
+    raise ValueError("Reference eth_rate (row 0) is NaN or invalid.")
 
 # Add the relative_deviation column
 reduced_data["relative_deviation"] = (
@@ -42,6 +53,7 @@ reduced_data["relative_deviation"] = (
 # Display the updated dataset
 st.write("Reduced Dataset with Relative Deviation:")
 st.table(reduced_data)
+
 
 # Function to process blockchain data and calculate linear regression
 def process_blockchain(data, blockchain_name):
