@@ -580,15 +580,20 @@ def add_collateral_at_risk(reduced_data, risk_data):
     # Update reduced_data with collateral at risk column
 reduced_data = add_collateral_at_risk(reduced_data, risk_data)
 if eth_price > 0:
-    # Convert 'volume' to ETH
-    reduced_data["volume"] = reduced_data["volume"] / eth_price
-    
-    # Rename the column to 'volume_eth' to reflect the new unit
-    reduced_data = reduced_data.rename(columns={"volume": "volume_eth"})
-    
+    # Handle invalid or missing values in the "volume" column
+    if "volume" in reduced_data.columns:
+        reduced_data["volume"] = pd.to_numeric(reduced_data["volume"], errors="coerce")  # Convert to numeric
+        reduced_data["volume"] = reduced_data["volume"].fillna(0)  # Replace NaN with 0
+        
+        # Perform the division and rename the column
+        reduced_data["volume"] = reduced_data["volume"] / eth_price
+        reduced_data = reduced_data.rename(columns={"volume": "volume_eth"})
+        
+
+    else:
+        st.error("The 'volume' column is missing from the reduced dataset.")
 else:
     st.error("ETH price is not available or invalid. Unable to convert volume to ETH.")
-    # Display the updated reduced dataset
 st.write("Reduced Dataset with Collateral at Risk (in ETH):")
 st.table(reduced_data)
 # Prepare summary data
