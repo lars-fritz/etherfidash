@@ -188,9 +188,6 @@ def add_std_deviation_column(reduced_data, residuals_std_dict):
 # Update reduced_data to include the new column
 reduced_data = add_std_deviation_column(reduced_data, residuals_std_dict)
 
-# Display the updated reduced data with the new column
-st.write("Reduced Dataset with Standard Deviation of Residuals:")
-st.table(reduced_data)
 
 
 # Footer Information
