@@ -569,7 +569,20 @@ if uploaded_risk_file is not None:
         st.plotly_chart(fig_risk_eth)
 else:
     st.write("No file uploaded for Collateral at Risk. Please upload a CSV file.")
+def add_collateral_at_risk(reduced_data, risk_data):
+    # Create a mapping from Label to Value (ETH) in risk_data
+    risk_mapping = dict(zip(risk_data['Label'], risk_data['Value (ETH)']))
+        
+    # Map the risk data to the reduced dataset based on blockchain
+    reduced_data["collateral_at_risk_eth"] = reduced_data["blockchain"].map(risk_mapping)
+    return reduced_data
 
+    # Update reduced_data with collateral at risk column
+reduced_data = add_collateral_at_risk(reduced_data, risk_data)
+
+    # Display the updated reduced dataset
+st.write("Reduced Dataset with Collateral at Risk (in ETH):")
+st.table(reduced_data)
 # Prepare summary data
 summary_rows = []
 
