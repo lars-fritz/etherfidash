@@ -361,6 +361,65 @@ st.plotly_chart(fig_liquidity)
 # Footer
 st.info("Liquidity (ETH) shows how much liquidity is available on each blockchain over time.")
 
+# Step 1: Calculate daily eth_price_day
+eth_price_day = {}
+
+for day in data["day"].unique():
+    daily_data = data[data["day"] == day]
+    z_all_row = daily_data[daily_data["blockchain"] == "Z-All"]
+    
+    if not z_all_row.empty:
+        liquidity_usd = z_all_row["liquidity_usd"].values[0]
+        liquidity_eth = z_all_row["liquidity_eth"].values[0]
+        
+        if liquidity_eth > 0:
+            eth_price_day[day] = liquidity_usd / liquidity_eth
+        else:
+            eth_price_day[day] = None
+    else:
+        eth_price_day[day] = None
+
+# Step 2: Calculate volume in ETH for each blockchain
+data["eth_price_day"] = data["day"].map(eth_price_day)
+data["volume_eth"] = data["volume"] / data["eth_price_day"]
+
+# Step 3: Compute liquidity-to-volume ratio
+data["liquidity_adjusted"] = data["liquidity_eth"] + (data["weeth_liquidity"] * data["eth_rate"])
+data["liquidity_to_volume_ratio"] = data["liquidity_adjusted"] / data["volume_eth"]
+
+# Step 4: Create the plot
+st.subheader("Liquidity-to-Volume Ratio Across Blockchains")
+fig_ratio = go.Figure()
+
+for blockchain in selected_blockchains:
+    blockchain_data = data[data["blockchain"] == blockchain]
+    blockchain_data = blockchain_data[["day", "liquidity_to_volume_ratio"]].dropna()
+
+    blockchain_data["day"] = pd.to_datetime(blockchain_data["day"], errors="coerce")
+    blockchain_data = blockchain_data.sort_values(by="day").reset_index(drop=True)
+
+    if not blockchain_data.empty:
+        fig_ratio.add_trace(go.Scatter(
+            x=blockchain_data["day"],
+            y=blockchain_data["liquidity_to_volume_ratio"],
+            mode='markers',
+            marker=dict(size=4, color=color_map[blockchain]),  # Reduced dot size here
+            name=f"{blockchain} Liquidity/Volume Ratio"
+        ))
+
+# Layout for Liquidity-to-Volume Ratio Plot
+fig_ratio.update_layout(
+    title="Liquidity-to-Volume Ratio for Selected Blockchains Over Time",
+    xaxis_title="Day",
+    yaxis_title="Liquidity-to-Volume Ratio",
+    legend=dict(yanchor="top", y=0.9, xanchor="left", x=1.02),
+    template="plotly_white"
+)
+
+st.plotly_chart(fig_ratio)
+
+# Footer
+st.info("Liquidity-to-Volume Ratio indicates the efficiency of liquidity utilization across blockchains.")
 
 
 
