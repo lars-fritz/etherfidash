@@ -19,6 +19,19 @@ def fetch_data():
 
 data = fetch_data()
 
+columns_to_remove = [
+    "index", "date", "liquidity_usd", "total_usd", 
+    "total_eth", "weeth_liquidity_usd", "total_volume", 
+    "total_rate", "utilization"
+]
+
+# Create the reduced dataset
+reduced_data = data.head(10).drop(columns=columns_to_remove, errors="ignore")
+
+# Display the reduced dataset
+st.write("Reduced Dataset:")
+st.table(reduced_data)
+
 # Function to process blockchain data and calculate linear regression
 def process_blockchain(data, blockchain_name):
     """Processes the data for a given blockchain and computes linear regression."""
