@@ -26,7 +26,11 @@ columns_to_remove = [
 ]
 
 # Create the reduced dataset
-reduced_data = data.head(10).drop(columns=columns_to_remove, errors="ignore")
+reduced_data = (
+    data.head(10)               # Take the first 10 rows
+    .drop(index=3, errors="ignore")  # Drop the fourth row (index starts at 0)
+    .drop(columns=columns_to_remove, errors="ignore")  # Drop specified columns
+)
 
 # Display the reduced dataset
 st.write("Reduced Dataset:")
