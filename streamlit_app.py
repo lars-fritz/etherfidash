@@ -170,6 +170,29 @@ summary_df = pd.DataFrame.from_dict(summary_stats, orient='index')
 summary_df = summary_df.rename(columns={"Slope": "Slope (ETH Rate Change)", "Residuals Std Dev": "Std Dev of Residuals"})
 st.dataframe(summary_df.style.format({"Slope (ETH Rate Change)": "{:.6f}", "Std Dev of Residuals": "{:.6f}"}))
 
+residuals_std_dict = {}
+
+# Process each selected blockchain and collect residuals_std
+for blockchain in selected_blockchains:
+    days, Y, predictions, slope, residuals_std = process_blockchain(data, blockchain)
+    
+    if residuals_std is not None:
+        residuals_std_dict[blockchain] = residuals_std
+
+# Add the standard deviation column to the reduced data
+def add_std_deviation_column(reduced_data, residuals_std_dict):
+    # Map blockchain to its standard deviation of residuals
+    reduced_data["std_deviation"] = reduced_data["blockchain"].map(residuals_std_dict)
+    return reduced_data
+
+# Update reduced_data to include the new column
+reduced_data = add_std_deviation_column(reduced_data, residuals_std_dict)
+
+# Display the updated reduced data with the new column
+st.write("Reduced Dataset with Standard Deviation of Residuals:")
+st.table(reduced_data)
+
+
 # Footer Information
 st.info("The regression line represents the trend of ETH rates over time whereas the standard deviation is a measure for the volatility on the same time window (although it is unclear how to extend volatility to pegged tokens)")
 
